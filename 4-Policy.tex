@@ -1,0 +1,192 @@
+% !TEX root = scheduler.tex
+\section{Policy Derivations and Load Controller Implementation}\label{sec:policy}
+%The discussions above outline how a variety of different policies can be specified with the \sys{} scheduler. 
+%
+%We also present the implementations of the load control mechanisms in the system.
+In our work, we focus on two system resources that are critical in in-memory database deployments: namely CPU and memory. Both these resources have different resource characteristics, which we outline below.
+
+First, consider the CPU resource. 
+On modern commodity servers there are often tens of CPU cores per socket, and the aggregate number of cycles available per unit time (e.g. a millisecond) across all the cores is very large. 
+Further, an implication of \sys{}'s fine-grained task allocation and execution paradigm is that the CPU resource can be easily shared at a fine time-granularity. 
+Several work orders, each from different query can be executed concurrently on different CPU cores, and each query may execute thousands or millions or even more number of work orders. 
+Thus, in practical terms, the CPU resource can be viewed as a nearly infinitely divisible resource across concurrent queries. 
+In addition, overall system utilization is often measured in terms of the CPU utilization. Combining all these factors, specifying a policy  in terms of the CPU utilization is natural, and intuitive for a user to understand the policy. 
+For example, saying that a fair policy equally distributes the CPU resource across all (admitted) concurrent queries is simple to understand and reason. 
+
+Memory, on the other hand, is a resource that is allocated by queries in larger granular chunks. 
+Active queries can have varying memory footprints (and the footprint for a query can change over the course of its execution). 
+Thus, memory as a resource is more naturally viewed as a ``gating'' resource. 
+Therefore, it is natural to use it in the load controller to determine if a query can be admitted based on its requested memory size. 
+Actual memory consumption for queries can also be easily monitored, and when needed queries can be suspended if memory resource needs to be freed up (for some other query, perhaps with a higher priority). 
+
+In this section, we describe different policies that are currently implemented in \sys{} to highlight how one can encode policies to work with the general probability-based scheduling framework. 
+As noted above the policies are specified in terms of the CPU resource. 
+
+A policy specification consists of two parts: an inter-class specification, and an intra-class specification. 
+The former specifies the resource allocation policy across query classes and the latter specifies resource allocations among queries within the same class. 
+The default specifications is uniform allocations for both intra and inter-class policies. 
+
+In Section~\ref{ssec:load-control-mech}, we describe the load control mechanisms that are implemented in \sys{}. 
+The load controller takes admission control and query suspension decisions based on the memory resource.
+%These load control mechanisms work in conjunction with the notion of query priority used in the policy implementations.
+
+The scheduling policies, described below in Sections~\ref{ssec:fairness}, ~\ref{ssec:hpf}, and~\ref{ssec:proportional-priority} are subject to the decisions made by the load controller, i.e. the policies apply to the queries that are admitted by the load controller and have not been suspended. %by the load controller. 
+
+We note that our scheduler framework allows extending the policy implementations and the load control mechanisms to other resource types such as network and disk I/Os, but we defer such extensions to future work, primarily as our implementation is within the context of an in-memory database. 
+
+Next, we describe the probabilistic framework that is used to implement various policies. 
+The notations used in the formulations are declared in Table~\ref{table:policy-notations}.
+\subsection{Fair}\label{ssec:fairness}
+\begin{table}[]
+	\centering
+	\begin{tabular}{|p{0.1\columnwidth}|p{0.75\columnwidth}|}
+		\hline
+		\textbf{Symbol} & \textbf{Interpretation} \\ \hline
+		$q_{i}$ & Query $i$ \\ \hline
+		$pb_{i}$ & Probability assigned to $q_{i}$ \\ \hline
+		$PV_{i}$ & The priority value for $q_{i}$ \\ \hline
+		$t_{i}$ & Predicted work order execution time for $q_{i}$ \\ \hline
+		$t_{PV_{i}}$ & Proportion of time allocated for the class with priority value $PV_{i}$ \\ \hline
+		$prob_{PV_{i}}$ & Probability assigned to the class with priority value $PV_{i}$ \\ \hline
+	\end{tabular}
+	\vspace{0.4em}
+	\caption{Description of notations}
+	\label{table:policy-notations}
+	\vspace{-2.5em}
+\end{table}
+
+\textbf{Policy Interpretation}: In a given time interval, all active queries should get an equal proportion of the total CPU cycles across all the cores.
+There is only one query class and the default (i.e. uniform) policy is used for intra-class queries. 
+%Thus the collective CPU resource (i.e. all cores across all sockets) is to be shared \textit{equally} by all concurrent queries. 
+
+\textbf{Policy Implementation}: Let us assume that there are $k$ concurrent active queries, namely $q_{1}, q_{2}, \ldots q_{k}$, $(k > 1)$. 
+The probability $pb_{j}$ is computed as:
+%\begin{displaymath}
+%$pb_{j} = \frac{\frac{1}{t_{j}}}{\sum\limits_{i=1}^{k}\frac{1}{t_{i}}}$
+%\end{displaymath}
+$pb_{j} = (\frac{1}{t_{j}})/(\sum\limits_{i=1}^{k}\frac{1}{t_{i}})$
+
+We can see that $pb_{j} \in (0, 1]$ and $\sum\limits_{j=1}^{k}pb_{j} = 1$. 
+Therefore, the $pb_{j}$ values can be interpreted as probability values. 
+As all the probability values are non-zero, every query has a non-zero chance of getting its work orders scheduled. 
+
+Notice that $\forall i, j$ such that $1 \leq i, j \leq k$, 
+%\begin{displaymath}
+%\frac{pb_{i}}{pb_{j}} = \frac{t_{j}}{t_{i}}
+%\end{displaymath}
+$$pb_{i}/pb_{j} = t_{j}/t_{i}$$
+
+A higher $t_{i}$ value indicates that the work orders for query $q_{i}$ take longer time to execute than the work orders for a query $q_{j}$ that has a lower $t_{j}$ value. 
+Thus, in a given time interval, fewer work orders of $q_{i}$ must be scheduled as compared to the query $q_{j}$, as depicted in Figure~\ref{fig:probability-explanation}.
+
+The probability associated with a query determines the likelihood of the scheduler dispatching a work order for that query.
+Thus, when $t_i > t_j$, $pb_j > pb_i$, i.e.  the probability for $q_{i}$ should be proportionally smaller than probability for $q_{j}$.
+
+\subsection{Highest Priority First (HPF)}\label{ssec:hpf}
+\textbf{Policy Interpretation}: Queries are tagged with priorities and the priority values are ordered. 
+Queries are executed in the order of their priority values; i.e. a higher priority query is preferred over a lower priority query for scheduling its work order. 
+The intra-class policy is set to the default (i.e. fair to all the queries within the class)
+%Queries in the same priority class are all treated equally, i.e. their resource allocation is identical.
+
+\textbf{Policy Implementation}: 
+%Each query $q_{i}$ is associated with a priority value $pv_{i}$, where $pv_{i}$ is a 
+%positive integer. 
+Let $\{PV_{1}, PV_{2}, \ldots, PV_{k}\}$ be the set of distinct priority values in the 
+workload. 
+We assume that a higher integer implies higher importance/priority.
+The scheduler first finds the highest priority value among all the currently active queries 
+which is $PV_{max} = max(PV_{1}, PV_{2}, \ldots, PV_{k})$. 
+Once we have found the maximum priority value $PV_{max}$, a fair resource allocation 
+strategy is used to compute the resource allocation for all the active queries in that 
+priority class. 
+
+%Note that with the HPF policy, if higher priority queries keep arriving continually, then 
+%lower priority queries could starve.
+
+In some situations, the queries from the highest priority value may not have enough work to keep all the workers busy. 
+In such cases, to maximize the utilization of the available CPU resources, the 
+scheduler may explore queries from the lower priority values to schedule work orders.
+
+\subsection{Proportional Priority (PP)}\label{ssec:proportional-priority}
+\textbf{Policy Interpretation}: Each query is tagged with a priority value.
+The collective resources that are allocated to a query class (i.e. all queries with the same priority value) is proportional to the class' priority value based on a specified scale; e.g. in a two class policy, an exponential scale could be used to specify that the high priority class should be given 10 times the resources as the low priority class. 
+The intra-class policy is set to the default (i.e. uniform).
+
+\textbf{Policy Implementation}: 
+Let $P = \{PV_{1}, PV_{2}, \ldots PV_{k}\}$ be the set of the distinct priority values 
+within the workload. 
+Similar to HPF policy, we assume that a higher integer implies higher 
+priority.
+For this example, we assume a linear scale for the priority values.
+
+In a unit time, a class with priority value $PV_{i}$ should get resources for a time that is 
+proportional to its priority value i.e. $PV_{i}$. 
+Therefore, the class with priority $PV_{i}$ should be allocated resources for 
+$t_{PV_{i}} = PV_{i}/\sum\limits_{j = 1}^{k}PV_{j}$ amount of time. 
+
+We now estimate how many work orders of priority class $PV_{i}$ can be executed
+in its allotted time. 
+To determine the number of work orders, we need an estimate for the execution time 
+of a future work order from the class as a whole, referred to as $w_{PV_{i}}$ for priority value $PV_{i}$.
+Therefore, assuming $m$ queries in a given class and the individual estimates of 
+work order execution times for queries with priority $PV_{i}$ are $t_{1}, t_{2}, \ldots, t_{m}$, then the predicted work order execution time for the class is $w_{PV_{i}} = \sum\limits_{j = 1}^{m}t_{j}/m$.
+Therefore the estimated number of work orders executed for priority class $PV_{i}$ is
+$n_{PV_{i}} = t_{PV_{i}} / w_{PV_{i}}$.
+
+Once we have determined $n_{PV_{1}}, n_{PV_{2}}, \ldots, n_{PV_{k}}$, i.e. the 
+estimated number of work orders executed by all the priority classes in their allotted
+time, it is straightforward to compute probabilities for each class. 
+The probability of priority class $PV_{i}$ is 
+$prob_{PV_{i}} = n_{PV_{i}}/\sum\limits_{j = 1}^{k}n_{PV_{j}}$
+
+Next we take a look at the load control mechanism. % in \sys{}.
+\subsection{Load Control Mechanism}\label{ssec:load-control-mech}
+As described earlier, the load control mechanism in \sys{} is designed to ensure the availability of memory resource to the queries in the system.
+This requires continuous monitoring of memory consumption in the system.
+The load controller component has two functions:
+1) Determining if new queries are allowed to run (commonly referred to as admission control).
+2) Suspending queries if the system is in danger of thrashing.
+In this section, we describe how the load control mechanism in \sys{} implements these two functions.
+
+%In this section we describe some example load control mechanisms implemented in \sys{}.
+Recall from Section~\ref{sec:design}, a new query entering in the system presents its Resource Map to the Load Controller. 
+The Resource Map describes the estimated range of resource requirements of the query.
+%Next we describe the resource requirements for the two resources we have
+%considered in this work: CPU and memory. 
+
+In \sys{}, the query optimizer provides the estimated memory requirements for a given query.
+Other methods can also be used, such as inferring the estimated resources from the previous runs of the
+query or other statistical analyses.
+The scheduler is %interested only in the estimates and is 
+agnostic to how these estimates are calculated.
+
+%In \sys{}, due to the work order--based execution paradigm, the maximum CPU requirement for a query can be arbitrarily high.
+%This maximum requirement is usually much higher than the available CPU resources. 
+%Therefore we set the maximum CPU requirement for every query to be equal to the number of CPU cores in the machine and the minimum CPU requirement to be 1.
+
+We denote the minimum and maximum memory requirements for a given query as $m_{min}$ and $m_{max}$.
+Let us define the threshold for maximum memory consumption for the database
+as $M$ and the current total memory consumption as $m_{current}$. 
+The term $m_{current}$ denotes total memory occupied by various tables, run time data structures such as hash tables for joins and aggregations etc. for all the queries in the system.
+
+In the simplest case, when there is enough memory to admit the query, we have $m_{max} + m_{current} < M$. 
+In this case, the load controller can let the query enter the system.
+
+When memory is insufficient, i.e. $m_{min} + m_{current} > M$, the query can't be directly admitted to the system. 
+The admission of the new query is decided based on the system's policy (i.e. one of the policies described earlier).
+
+If the system is realizing the fair policy, all queries have the same priority.
+In this scenario, the load controller simply waitlists the new query and waits until enough memory becomes available, after which the query can be admitted.
+
+For both proportional priority-based and HPF policies, if the new query's priority is smaller than the minimum priority value in the system, the load controller waitlists the query. 
+The waitlisted query can be admitted in the system when enough memory is available to admit it.
+In the other case, the load controller finds queries from the lower priority values which have high memory footprints. 
+It continues to suspend such queries from the lower priority levels (in decreasing order of memory footprints) until enough memory becomes available to admit the given query. 
+
+The load control mechanism can also be used continually to monitor the actual memory consumption of queries, and suspend existing queries if the actual memory consumption ($m_{current}$) approaches a pre-defined threshold limit.
+The decisions made by the load controller are logged, so that its actions can be viewed in a control dashboard.
+% performs admission control for all the policies. In the future, the load controller can be made to monitor run--time memory allocations and with the help of the \sys{}'s buffer pool, control such allocations requested by queries in the system.
+%or equal to the currently running queries in the system, the Load Controller may waitlist the query.
+%However, if the new query has a higher priority than the currently running queries in the system, it can decide to make memory available for the query, so as to admit it.
+%One possible way to free up the memory is by suspending existing queries in the system in decreasing order of their memory footprints, until there is enough memory available to let the new query in the system.
+%The suspended queries can be reactivated when there are enough resources available to execute them. 
