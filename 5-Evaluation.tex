@@ -52,15 +52,14 @@ SELECT * FROM Employees WHERE salary > 90000 WITH PRIORITY 2;
 
 \subsection{Experimental Workload}\label{ssec:workload}
 For our experimental evaluation, we use the Star Schema Benchmark (SSB)~\cite{ssb}. 
-The SSB is based on the TPC-H benchmark, and is designed to measure the query performance when %database systems in support of classical 
-the data warehouse uses the popular Kimball~\cite{Kimball} approach. 
-At a scale factor of X, the benchmark corresponds to about X GB of data in the 
-corresponding TPC-H warehouse.
-
+%The SSB is based on the TPC-H benchmark, and is designed to measure the query performance when %database systems in support of classical 
+%the data warehouse uses the popular Kimball~\cite{Kimball} approach. 
+%At a scale factor of X, the benchmark corresponds to about X GB of data in the 
+%corresponding TPC-H warehouse.
 The SSB benchmark has 13 queries, divided in four categories. 
-Each query is identified as \textbf{qX.Y}, where $X$ is the class and $Y$ is the query 
-number within the class.
-There are four query classes. 
+%Each query is identified as \textbf{qX.Y}, where $X$ is the class and $Y$ is the query 
+%number within the class.
+%There are four query classes. 
 %, i.e. $1\leq X\leq4$. 
 %The first and second classes have three queries each, the third class has four queries, and 
 %the fourth class has three queries.
@@ -70,13 +69,14 @@ attributes.
 The grouping of queries in various classes makes this benchmark suitable for our 
 experiments, as it provides a way of assigning priorities to the queries based on their class. 
 
-The dataset has 1 fact and 4 dimension tables. 
-We use SSB SF 100 dataset in two ways -- first, we generate uniform data in all the relations as per the  original benchmark specification~\cite{ssb}.
-Second, we introduce skew in the SSB dataset as described by Seelam et 
-al.~\cite{DBLP:conf/wosp/2013}, by altering values in \textit{lo\textunderscore quantity} column of \textit{lineorder} (fact) table with the values derived from a probability distribution function: $ P(X=x) = (0.3/1.3^{x})$. 
-The range of values in \textit{lo\textunderscore quantity} column is $[1, 50]$. 
-In the uniform dataset, every value in this range is equally likely to appear in the column.
-The skewed version contains nearly 90\% values in the range $[1, 10]$. 
+%The dataset has 1 fact and 4 dimension tables. 
+We use SSB SF 100 dataset in two ways -- uniform and skewed distribution. 
+%first, we generate uniform data in all the relations as per the  original benchmark specification~\cite{ssb}.
+We introduce skew in the \textit{lo\textunderscore quantity} column of \textit{lineorder} table, as described by Seelam et al.~\cite{DBLP:conf/wosp/2013}.
+% with the values derived from a probability distribution function: $ P(X=x) = (0.3/1.3^{x})$. 
+%The range of values in \textit{lo\textunderscore quantity} column is $[1, 50]$. 
+In the uniform dataset, every value in the domain [1, 50] is equally likely to appear in the \textit{lo\textunderscore quantity} column.
+The skewed version, 90\% values belong to the range $[1, 10]$. 
 
 \subsection{Evaluation of Policies}\label{ssec:policy-eval}
 In this section, we evaluate various policies currently implemented in the system.
