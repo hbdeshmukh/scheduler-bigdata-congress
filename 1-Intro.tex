@@ -61,11 +61,12 @@ Therefore, our framework is far more comprehensive and more broadly applicable t
 
 Our framework employs a design that cleanly separates policy from mechanism. 
 This design allows the scheduler to easily support a range of  different policies, and allows the system to effectively use the underlying hardware resources. 
-The clean separation also makes the system maintainable over time and for the system to add new policies easily. Thus, the system is extensible. 
+The clean separation also makes the system maintainable over time and for the system to add new policies easily. 
+Thus, the system is extensible. 
 The key underlying unifying mechanism is a probability-based framework that continuously determines resource allocation among concurrent queries.
 Our evaluation (see Section~\ref{sec:eval}) demonstrates that the scheduler can perform resource allocation precisely as per the policy specifications. 
 
-The framework uses a novel learning module that learns about the resources that are actually consumed by concurrent queries, and uses the model to predict future resource consumption needs for \textit{each} active query. 
+The framework uses a novel learning module that learns about the resources consumed by concurrent queries, and uses the model to predict future resource consumption needs for \textit{each} active query. 
 Thus, the scheduler does not require accurate predictions about resource consumption for each stage of each query from the query optimizer (though accurate predictions are welcome as they provide a better starting point to the learning component). 
 The predictions from the learning module can then be used to react to changing workload and/or environment conditions to allow the scheduler to realize the desired policy. 
 Our evaluations underline the crucial impact of the learning module in the enforcement of policies.

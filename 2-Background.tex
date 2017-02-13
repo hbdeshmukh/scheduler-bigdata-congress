@@ -29,4 +29,4 @@ threads, where the computations on the data are carried out.
 A work order operates on a data block, which is treated as a self-contained mini-database~\cite{qsstorage}. 
 The computation that is required for each operator in a query plan is decomposed into a sequence of work orders. 
 For example, a select operator produces as many work orders as there are blocks in the input table. 
-We describe the storage management in \sys{} in Appendix~\ref{apx:storage-manager}.
+The work order abstraction is closely related to storage management in \sys{}, which we describe in Appendix~\ref{apx:storage-manager}.

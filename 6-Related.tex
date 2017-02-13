@@ -5,7 +5,7 @@ We now describe the related work on scheduling in database systems, operating sy
 The concept of work orders finds its similarity with other works in the form of \textit{morsels} used in Hyper~\cite{morsel} and the segment-based parallelism presented by Wang et al.~\cite{wang2016elastic}. 
 All these abstractions propose a mechanism to achieve high intra-query, intra-operator data parallelism.
 Hyper~\cite{morsel} uses a \textit{pull-based approach} to schedule the morsels. 
-Every worker thread pulls one morsel from a global pool, executes it and repeats the process.
+Every worker thread continues to pull a morsel from a global pool, and executes it.
 \sys{} uses a \textit{push-based model}, where the assignment of work orders to worker threads is controlled by the scheduler.
 The pull-based dispatch model is simple for executing one query at a time. 
 However, it gets complicated in terms of synchronization and data structure complexity, when considering other requirements such as enforcing a limit over execution of work orders from multiple queries with different priorities, or incorporating a flow control across multiple pipelines, as done by Wang et al.~\cite{wang2016elastic}.
@@ -59,7 +59,6 @@ Alternate actions could be to re-prioritize, kill, or resubmit the query, as des
 %SLAs. 
 
 Many commercial databases systems offer workload management solutions~\cite{res_gov, rm, DB2, teradatawm, gpdb, hpwm}.
-%solutions like SQL Server Resource Governor~\cite{res_gov}, Oracle Resource Manager~\cite{rm}, DB2 Workload Manager~\cite{DB2}, Teradata Workload Management~\cite{teradatawm}, Greenplum Database~\cite{gpdb} and HP Global Workload Manager~\cite{hpwm}.
 A common theme in such solutions is to provide admission control capabilities, classifying queries based on their estimated resource requirements (like CPU, memory, I/O etc.), encoding resource allocation limits as resource pools and mapping workloads to the resource pools. 
 While such estimation methods can be used to complement the approach that is proposed here, 
 \sys{}'s scheduler can also work without such detailed estimation techniques. 
@@ -68,33 +67,9 @@ Resource management is a crucial problem for database systems.
 Mehta and Dewitt's~\cite{mehta1993dynamic} memory allocation scheme
 grouped queries by their estimated memory requirements, and used a dynamic 
 algorithm to allocate memory to different query classes. 
-%The algorithm relies on the knowledge of execution times of all the queries in 
-%the system given exclusive access to the system. 
-%This requirement makes the algorithm impractical in practice.
-%For each class of query, they compute the average observed
-%response times of queries within the class. Then, for each class they compute 
-%the average response times of queries if each query is run individually and 
-%exclusively on the system. They take the ratios of these two averages and 
-%compute the standard deviation of the ratios from all the classes, which is the 
-%metric for fairness. Low standard deviation implies more fairness. 
 Davison and Graefe introduced a resource brokering model~\cite{davison1995dynamic} to minimize query execution times with a constraint of fairness. 
-%The model uses \textit{Return on Consumption} given additional resources 
-%(namely memory and disk bandwidth) 
-%to minimize individual query execution times. 
-%The key highlight of their work is not to use the fairness metric while doing resource 
-%allocation unlike~\cite{mehta1993dynamic}.
-%The fairness is implemented by the virtue of \textit{admission policy}. 
 Such resource management techniques are complimentary to \sys{}'s execution engine 
 and can also be incorporated in its buffer manager. 
-%The resource broker makes a decision on 
-%whether to admit a query or not depending on a slowdown formula 
-%$$slowdown = \frac{waitTime + execTime_{est}}{execTime_{est}}$$ where 
-%$execTime_{est}$ is the estimated execution time of the query in the system.
-%It should be noted that both the works~\cite{davison1995dynamic,mehta1993dynamic} 
-%either directly or indirectly use query execution times estimates to ensure 
-%fairness. 
-%The results in these works have been validated using simulators for 
-%database systems, hence their usefulness in real systems can't be verified. 
 
 Predicting query execution time is an active area of research. 
 Wu et al.~\cite{wu2013towards, wu2014uncertainty} developed an analytical model using optimizer's cost model to estimate the CPU and I/O costs for individual query, and used a queueing model to estimate the execution times of concurrent queries in a workload. 
@@ -142,14 +117,15 @@ The OS maintains a process context that describes the progress of the preempted 
 \sys{}'s scheduling is non-preemptive, which means once a work order begins its execution on a CPU core, it continues to do so until completion.
 Non-preemptive scheduling allows us to not worry about maintaining work order context (similar to process context), 
 This design choice helps simplifying our core relational operator execution algorithms.
- 
-Meehan~\cite{meehean2011towards} analyzed various Linux CPU schedulers, %like O(1), CFS, and BFS. 
-showcased the issues of black box CPU scheduling and highlighted the need for increased transparency in CPU scheduling.
-%It achieves fairness by assigning equal proportion of time to the users and not 
-%to the individual processes that are running on the system. 
-%Pabla et al.~\cite{pabla2009completely} described how the Completely Fair Scheduler (CFS) strives to be fair to all the processes running in the Linux. 
-Peter et al.~\cite{peter2010design} proposed design principles for multi-core schedulers used in general purpose OS.
-Giceva et al.~\cite{giceva2013cod} advocated co-designing database and OS for their better integration.
+
+\reminder{Removed OS refs}
+%Meehan~\cite{meehean2011towards} analyzed various Linux CPU schedulers, %like O(1), CFS, and BFS. 
+%showcased the issues of black box CPU scheduling and highlighted the need for increased transparency in CPU scheduling.
+%%It achieves fairness by assigning equal proportion of time to the users and not 
+%%to the individual processes that are running on the system. 
+%%Pabla et al.~\cite{pabla2009completely} described how the Completely Fair Scheduler (CFS) strives to be fair to all the processes running in the Linux. 
+%Peter et al.~\cite{peter2010design} proposed design principles for multi-core schedulers used in general purpose OS.
+%Giceva et al.~\cite{giceva2013cod} advocated co-designing database and OS for their better integration.
 
 \sys{}'s scheduler design aligns to the idea that scheduling must be transparent, fine-grained, and most importantly the need to separate mechanisms from policies~\cite{LampsonS76} - a common theme found in the OS literature.
 
@@ -157,12 +133,11 @@ In the networking literature, Deficit Round Robin~\cite{shreedhar1996efficient} 
 Our work is similar to them as their scheduling takes into account the packet sizes, which is analogous to the work order execution times.
 However their scheduling decision is inherently round robin based (with additional maintenance of quantum information), where as our scheduling decisions are based on dynamic probabilities. 
 
-%CFS gives each process and equal share of processor power, and schedules the 
-%process that has been waiting the most for the CPU. 
-Cluster scheduling has received a wide attention recently.
-Isard et al.~\cite{isard2009quincy} encoded the problem of scheduling jobs on compute nodes in the cluster as a graph that captures the data-locality and fairness requirements of the jobs. 
-\textit{Tetris}~\cite{grandl2014multi} is a multi-resource cluster scheduler that packs tasks to machines based on their demands for different resources. 
-This paper focuses on a single node setting, however, such ideas may be interesting to purse in the distributed version of \sys{}, which is part of future work.
+\reminder{Removed cluster scheduling refs}
+%Cluster scheduling has received a wide attention recently.
+%Isard et al.~\cite{isard2009quincy} encoded the problem of scheduling jobs on compute nodes in the cluster as a graph that captures the data-locality and fairness requirements of the jobs. 
+%\textit{Tetris}~\cite{grandl2014multi} is a multi-resource cluster scheduler that packs tasks to machines based on their demands for different resources. 
+%This paper focuses on a single node setting, however, such ideas may be interesting to purse in the distributed version of \sys{}, which is part of future work.
 %In cluster scheduling, resource demands of tasks are usually well understood. 
 %Therefore variations in the duration of task executions can be statically modelled 
 %- e.g. changing the site of task execution, time for input data movement across 
