@@ -154,12 +154,6 @@ The Resource Map describes the estimated range of resource requirements of the q
 %Next we describe the resource requirements for the two resources we have
 %considered in this work: CPU and memory. 
 
-In \sys{}, the query optimizer provides the estimated memory requirements for a given query.
-Other methods can also be used, such as inferring the estimated resources from the previous runs of the
-query or other statistical analyses.
-The scheduler is %interested only in the estimates and is 
-agnostic to how these estimates are calculated.
-
 %In \sys{}, due to the work order--based execution paradigm, the maximum CPU requirement for a query can be arbitrarily high.
 %This maximum requirement is usually much higher than the available CPU resources. 
 %Therefore we set the maximum CPU requirement for every query to be equal to the number of CPU cores in the machine and the minimum CPU requirement to be 1.

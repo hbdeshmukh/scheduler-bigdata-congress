@@ -33,9 +33,9 @@ The scheduler needs to provide an easy way to specify a variety of policies (e.g
 %Such flexibility is cruicial for the database to be deployed in various scenarios. 
 Ideally, the scheduler should adhere to the policy even if the query plan that it has been given has poor estimates for resource consumption.
 
-Second, the governance model should be \textit{responsive} to dynamic situations. % and prevent  chaotic state. 
+Second, the governance model should be \textit{responsive} to dynamic situations. 
 Thus, the scheduler must be reactive so that it can auto-magically deal with changing conditions; e.g., the arrival of a high-priority query or an existing query taking far more resources than expected. 
-A related goal for the scheduler is to deal with resource thrashing in a controlled and predictable way.
+A related goal for the scheduler is to \textit{control} and \textit{predictably deal} with resource thrashing.
 
 Finally, the governance should be \textit{efficient} and \textit{effective}. 
 Thus, the scheduler must work with the data processing kernels in the system to use the hardware resources effectively to realize high cost efficiency and high performance from the underlying deployment. 

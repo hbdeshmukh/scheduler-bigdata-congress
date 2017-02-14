@@ -119,9 +119,8 @@ preferred over lower priority classes.
 	\label{fig:hpf-all}
 \end{figure}
 
-As before, we use all the 13 SSB queries for this experiment. 
-In this experiment, the first 11 queries from the benchmark have the same priority value (1).
-The last two queries (Q4.2 and Q4.3) are given a higher priority value (2). 
+As before, we use all the 13 SSB queries for this experiment, and the first 11 queries from the benchmark have the same priority value (1).
+The last two queries (Q4.2 and Q4.3) have a higher priority value (2). 
 The execution begins with the first 11 queries in the benchmark, i.e. Q1.1 to Q4.1.
 
 We inject Q4.2 in the system at around 5 seconds and Q4.3 at around 15 seconds.
@@ -276,10 +275,12 @@ We sort the skewed \textit{lineorder} table on the \textit{lo\textunderscore qua
 	\vspace{-1em}
 \end{figure}
 	
-To test the scheduler's ability to learn in the presence of skew, we perform a comparison between the predicted work order times for each query against the observed work order times for the same query.
-For completion, we perform the same experiment on the skewed data and uniform data. Figure~\ref{fig:pred-vs-observed-time-per-wo} presents the results of this experiment, with relative error of the prediction on the Y-axis and time on X-axis.
-We can see that the relative error is very low in both the uniform and the skewed dataset for both queries. 
-Due to the skew, $Q1.1$ takes more time as compared to the uniform dataset.
+To test the scheduler's ability to learn in the presence of skew, we compare the predicted work order times for each query with the observed work order times for the same query.
+%For completion, we perform the same experiment on the skewed data and uniform data. 
+For this experiment, we use both the skewed and uniform data.
+Figure~\ref{fig:pred-vs-observed-time-per-wo} presents the results of this experiment, with relative error of the prediction on the Y-axis and time on X-axis.
+We can see that the relative error is very low in both the datasets for both queries. 
+The execution of $Q1.1$ with skewed data takes longer than the uniform dataset.
 The intermediate peaks in the relative error correspond to phase change in the execution plan. 
 Note that the scheduler learns the phase changes quickly, and adjusts its estimates after each phase change. 
 
@@ -287,7 +288,6 @@ Note that the scheduler learns the phase changes quickly, and adjusts its estima
 	\centering
 	\subfigure[Skewed dataset]{\includegraphics[]{figures/q11-q41-prediction-accuracy-skew-data.pdf}}
 	\subfigure[Uniform dataset]{\includegraphics[]{figures/q11-q41-prediction-accuracy-uniform-data.pdf}}
-	\vspace{-1em}
 	\caption{Comparison of predicted and observed time per work order}
 	\label{fig:pred-vs-observed-time-per-wo}
 	\vspace{-1em}
@@ -309,8 +309,7 @@ We set the load controller policy to specify that the threshold for suspending q
 %Recall from Section~\ref{sec:background} that the 
 \sys{}'s buffer pool stores not just the tables but also hash tables used for joins and aggregations.
 %The LRU-k based buffer pool implementation may evict cold pages if there is a need to make more memory available.
-If the requested memory can't be allocted within the memory limits, the load controller 
-can suspend a query with the highest memory footprint. 
+If the requested memory cannot be allocated within the memory limits, the load controller can suspend a query with the highest memory footprint. 
 In the current implementation, the check for reactivating the suspended query is performed upon every query completion and it involves similar memory considerations as that described above. 
 Figure~\ref{fig:load-control-cpu-util} shows the CPU utilization of the queries.
 

@@ -210,8 +210,7 @@ Note that, $pb_{1} > pb_{2}$ and $pb_{1} + pb_{2} = 1$.
 %\textit{fairly}, as demanded by the policy. 
 
 Notice that the Policy Enforcer is not concerned with the complexities of the operators in the query DAGs. 
-It simply maintains the probability associated with each active query which is determined by the query's %predicted 
-work order execution times.
+It simply maintains the probability associated with each active query which is determined by the query's predicted work order execution times.
 
 The Policy Enforcer can also function with workloads that consist of queries categorized in multiple classes, where each class has a different level of ``importance'' or ``priority''. 
 The policy specifies that the resource allocation to a query class must simply be in accordance to its importance, i.e. queries in a more important class should collectively get a higher share of the resources, and vice versa.
@@ -300,3 +299,29 @@ This is a crucial aspect that we leverage in the design of our scheduler.
 %by the buffer pool. 
 %The buffer pool manager employs an LRU-2~\cite{lruk} replacement policy. 
 %Thus, it is possible for a hash table to get evicted to disk, if it has become ``cold''; e.g. if it belongs to a suspended query.
+
+\section{Resource Map Discussion}\label{apx:resource-map}
+An example Resource Map of an incoming query to the system is shown below:
+\begin{lstlisting}[language=python, 
+								   basicstyle=\ttfamily\small, 
+								   showstringspaces=false,
+								   keywordstyle=\color{bondiblue}\bfseries, 
+								   emph={CPU, Memory}, 
+								   emphstyle=\color{cardinal}\bfseries]
+CPU:    {min: 1 Core, max: 20 Cores}
+Memory: {min: 20 MB,  max: 100 MB}
+\end{lstlisting}
+
+This Resource Map states that the query can use 1 to 20 cores (i.e. specifies the range of intra-operator parallelism) and is estimated to require a minimum of 20 MB of memory to run, and an estimated 100 MB of memory in the worst case.
+
+In \sys{}, the query optimizer provides the estimated memory requirements for a given query.
+Other methods can also be used, such as inferring the estimated resources from the previous runs of the query or other statistical analyses.
+The scheduler is agnostic to how these estimates are calculated.
+
+\section{Pipelining in \sys{}}\label{apx:pipelining}
+During a work order (presumably belonging to a producer relational operator in a pipeline) execution, output data may be created (in blocks in the buffer pool). 
+When an output data block is filled, the worker thread sends a ``block filled'' message to the corresponding query's manager via the following channel: Worker $\rightarrow$ Foreman $\rightarrow$ Policy Enforcer $\rightarrow$ Query Manager.
+The Query Manager may then create a new work order (for a consumer relational operator in the pipeline) based on this information;
+e.g. if this block should be pipelined to another operator in the query plan.
+
+Note that pipelining in \sys{} works on a block-basis, instead of the traditional tuple-basis.

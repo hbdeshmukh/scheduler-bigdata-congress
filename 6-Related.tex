@@ -1,8 +1,8 @@
 % !TEX root = scheduler.tex
 \section{Related Work}\label{sec:related}
-We now describe the related work on scheduling in database systems, operating systems (OS), networks, and cluster computing. 
+We now describe the related work on scheduling in database systems, operating systems (OS), and networks. %, and cluster computing. 
 
-The concept of work orders finds its similarity with other works in the form of \textit{morsels} used in Hyper~\cite{morsel} and the segment-based parallelism presented by Wang et al.~\cite{wang2016elastic}. 
+The \textit{work orders} abstraction is similar to other abstractions such as \textit{morsels} used in Hyper~\cite{morsel} and the segment-based parallelism presented by Wang et al.~\cite{wang2016elastic}. 
 All these abstractions propose a mechanism to achieve high intra-query, intra-operator data parallelism.
 Hyper~\cite{morsel} uses a \textit{pull-based approach} to schedule the morsels. 
 Every worker thread continues to pull a morsel from a global pool, and executes it.
@@ -49,7 +49,7 @@ This work is complimentary to our scheduler design as it deals with ordering the
 %It does not preempt queries once they are scheduled, whereas \sys{}'s 
 %scheduler uses fine grained control over query execution, allowing query suspension and resumption. 
 
-In business intelligence reporting settings, workload management is an important challenge.
+In business intelligence settings, workload management is an important challenge.
 Some techniques to manage workloads are based on QoS considerations. 
 Krompass et al.~\cite{krompass2007dynamic} identify and handle mis-behaving queries in a workload, and also propose an economic model for prioritizing and penalizing queries based on their service level agreements~\cite{krompass2006quality}.
 Such techniques can be combined with our scheduler. 
