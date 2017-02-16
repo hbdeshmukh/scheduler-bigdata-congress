@@ -12,86 +12,73 @@ The probabilities assigned to each query in such implementation are statically d
 execution skew. 
 \item To check how the load balancing component of the scheduler works in extreme/overloaded scenarios.
 \end{enumerate}
-\subsection{Evaluation Platform}
-In this section, we describe the hardware used for our experimental evaluation. 
 
-We use a machine %provided by the CloudLab~\cite{RicciEide:login14} service for the experiments.
-that has two Intel Xeon Intel E5-2660 2.60 GHz (Haswell EP) processors. 
-Each processor has 10 cores and 20 hyper-threading hardware threads. 
-The machine runs Ubuntu 14.04.1 LTS. 
-It has a total of 160 GB ECC memory with 80 GB of directly-attached memory per NUMA socket. 
-Each processor has a 25 MB L3 cache shared by all of its cores. 
-Each core has a 32 KB L1 instruction cache, 32 KB L1 data cache, and a 256 KB L2 cache.
-%This machine has two 1.2 TB 10K RPM SAS HDDs, and one 480 GB SAS SSD device.
+Our evaluation platform is described in Table~\ref{table:hardware}.
+
+\begin{table}[]
+\centering
+\begin{tabular}{|p{1cm}|p{6.9cm}|}
+\hline
+\textbf{Parameter} & \textbf{Description} \\ \hline
+Processor & 2 Intel Xeon Intel E5-2660 2.60 GHz (Haswell EP) processors\\ \hline
+Cores & 10 per socket, 20 per socket with hyper-threading \\ \hline
+Memory & 80 GB per NUMA socket, 160 GB total \\ \hline
+Caches & L3: 25 MB, L2: 256 KB, L1 (both instruction and data): 32 KB \\ \hline
+OS & Ubuntu 14.04.1 LTS \\ \hline
+\end{tabular}
+\caption{Evaluation Platform}
+\label{table:hardware}
+\vspace{-2.5em}
+\end{table}
 \subsection{\sys{} Specifications}
 We now describe \sys{}'s configuration parameters used in the experiments. 
-\sys{} uses all 40 threads in the system as worker threads.
-Each worker thread is pinned to a CPU core. 
-Such pinning prevents migration of a thread from one CPU core to another by the OS, which may incur cache misses and migration penalties.
-The scheduler thread is not pinned, as its CPU utilization is low and it is not worth dedicating a CPU core for the scheduler thread.
-
-\sys{}'s buffer pool is configured with 80\% of the available system memory (126 GB). 
+All 40 threads in the system are used as worker threads.
+%Each worker thread is pinned to a CPU core. 
+%Such pinning prevents migration of a thread from one CPU core to another by the OS, which may incur cache misses and migration penalties.
+%The scheduler thread is not pinned, as its CPU utilization is low and it is not worth dedicating a CPU core for the scheduler thread.
+The buffer pool is configured with 80\% of the available system memory (126 GB). 
 Memory for storage blocks, temporary tables and hash tables is allocated from the buffer 
 pool.
-The block sizes for all the stored relation is set to 4 MB.
-We preload the buffer pool before executing the queries, which means that the queries run 
-on ``hot'' data. 
+The block sizes for all the stored relations is 4 MB.
+We preload the buffer pool before executing the queries, which means that the queries run on ``hot'' data. 
 
-To encode the priority information in a query, we modify \sys{}'s SQL parser.
-The example below shows a query with priority value as 2:
-\lstset{language=SQL, 
-	basicstyle=\ttfamily\footnotesize, 
-	showstringspaces=false,
-	keywordstyle=\color{cardinal}\bfseries, 
-	otherkeywords={WITH, PRIORITY},
-	emph=[1]{San,Diego}, emphstyle=[1]{\color{bondiblue}}}
-\begin{lstlisting}
-SELECT * FROM Employees WHERE salary > 90000 WITH PRIORITY 2;
-\end{lstlisting}
-\vspace{-1em}
+%To encode the priority information in a query, we modify \sys{}'s SQL parser.
+%The example below shows a query with priority value as 2:
+%\lstset{language=SQL, 
+%	basicstyle=\ttfamily\footnotesize, 
+%	showstringspaces=false,
+%	keywordstyle=\color{cardinal}\bfseries, 
+%	otherkeywords={WITH, PRIORITY},
+%	emph=[1]{San,Diego}, emphstyle=[1]{\color{bondiblue}}}
+%\begin{lstlisting}
+%SELECT * FROM Employees WHERE age > 25 WITH PRIORITY 2;
+%\end{lstlisting}
+%\vspace{-1em}
 
 \subsection{Experimental Workload}\label{ssec:workload}
 For our experimental evaluation, we use the Star Schema Benchmark (SSB)~\cite{ssb}. 
-%The SSB is based on the TPC-H benchmark, and is designed to measure the query performance when %database systems in support of classical 
-%the data warehouse uses the popular Kimball~\cite{Kimball} approach. 
-%At a scale factor of X, the benchmark corresponds to about X GB of data in the 
-%corresponding TPC-H warehouse.
-The SSB benchmark has 13 queries, divided in four categories. 
-%Each query is identified as \textbf{qX.Y}, where $X$ is the class and $Y$ is the query 
-%number within the class.
-%There are four query classes. 
-%, i.e. $1\leq X\leq4$. 
-%The first and second classes have three queries each, the third class has four queries, and 
-%the fourth class has three queries.
-The queries in each category are similar with respect to aspects such as the 
-number of joins in the query, the relations being joined, the filter and aggregation 
-attributes. 
-The grouping of queries in various classes makes this benchmark suitable for our 
-experiments, as it provides a way of assigning priorities to the queries based on their class. 
-
+We justify the choice of SSB for our evaluation in Appendix~\ref{apx:ssb}.
 %The dataset has 1 fact and 4 dimension tables. 
-We use SSB SF 100 dataset in two ways -- uniform and skewed distribution. 
+We use two variants of SSB SF 100 dataset - uniform and skewed. 
 %first, we generate uniform data in all the relations as per the  original benchmark specification~\cite{ssb}.
-We introduce skew in the \textit{lo\textunderscore quantity} column of \textit{lineorder} table, as described by Seelam et al.~\cite{DBLP:conf/wosp/2013}.
+We introduce skew in the \textit{lo\_quantity} column of \textit{lineorder} table, as described by Seelam et al.~\cite{DBLP:conf/wosp/2013}.
 % with the values derived from a probability distribution function: $ P(X=x) = (0.3/1.3^{x})$. 
 %The range of values in \textit{lo\textunderscore quantity} column is $[1, 50]$. 
-In the uniform dataset, every value in the domain [1, 50] is equally likely to appear in the \textit{lo\textunderscore quantity} column.
-The skewed version, 90\% values belong to the range $[1, 10]$. 
+In the uniform version, each value in the domain [1, 50] is equally likely to appear in the \textit{lo\textunderscore quantity} column.
+In the skewed version, 90\% values fall in the range $[1, 10]$. 
 
 \subsection{Evaluation of Policies}\label{ssec:policy-eval}
 In this section, we evaluate various policies currently implemented in the system.
-All the policies are specified in terms of the CPU resources. 
-With these experiments, we verify if the actual CPU allocation among queries is in accordance with the policy specifications.
-To calculate CPU utilization, we log the start and end times for each work order and use this log to calculate the CPU utilization.
-%we extract all event points whenever a work order starts or ends. We aggregate how many workers that each query is assigned to between two consecutive event points. Later on, we group them into fixed size intervals (e.g N1 ms) and calculate average number of workers that the query has in these intervals. We normalize the number of workers that each query has by dividing all values to total number of workers in the system. For plotting purpose, the values are smoothed by using rolling average over N2 consecutive window values.
-%\reminder{Give values for N1 and N2}
+%All the policies are specified in terms of the CPU resources. 
+%With these experiments, 
+Specifically, we verify if the actual CPU allocation among queries is in accordance with the policy specifications.
+To calculate CPU utilization, we use the start and end times for each work order. % and use this log to calculate the CPU utilization.
 
 \subsubsection{Fair}
 In this experiment, we execute all 13 queries from the SSB concurrently using the fair policy. 
 As described in Section~\ref{ssec:fairness}), the policy specification implies a fair sharing of CPU resources among concurrent queries.
 The CPU utilization of the queries is depicted in Figure~\ref{fig:fair-cpu-util}.
-As we can see, %from Figure~\ref{fig:fair-cpu-util}, 
-the CPU utilization of all the queries remains nearly equal to each other during the workload execution, despite queries belonging to different query classes with varying query complexities.
+As we can see, the CPU utilization of all the queries remains nearly equal to each other during the workload execution, despite queries belonging to different query classes with varying query complexities.
 
 \begin{figure}[]
 	\centering
@@ -101,8 +88,7 @@ the CPU utilization of all the queries remains nearly equal to each other during
 	\label{fig:fair-cpu-util}
 \end{figure}
 
-Notice that the available CPU resources also get automatically distributed elastically among the active 
-queries (e.g. at the 10 and 15 seconds marks) when a query finishes its execution. 
+Notice that the available CPU resources also get automatically distributed elastically among the active queries (e.g. at the 10 and 15 seconds marks) when a query finishes its execution. 
 This elasticity behavior allows \sys{} to fully utilize the CPU resources at \textit{all} times.
 \subsubsection{HPF}
 In this experiment, we validate whether the implementation matches the policy 
@@ -119,10 +105,9 @@ preferred over lower priority classes.
 	\label{fig:hpf-all}
 \end{figure}
 
-As before, we use all the 13 SSB queries for this experiment, and the first 11 queries from the benchmark have the same priority value (1).
-The last two queries (Q4.2 and Q4.3) have a higher priority value (2). 
-The execution begins with the first 11 queries in the benchmark, i.e. Q1.1 to Q4.1.
-
+%As before, we use all the 13 SSB queries for this experiment, 
+All queries have the same priority value (1) except Q4.2 and Q4.3 which have a higher priority value (2). 
+The execution begins with 11 queries having the same priority value. %, i.e. Q1.1 to Q4.1.
 We inject Q4.2 in the system at around 5 seconds and Q4.3 at around 15 seconds.
 Figure~\ref{fig:hpf-all} shows the CPU utilization of queries during the workload 
 execution.
@@ -130,12 +115,10 @@ execution.
 Note that when the high priority queries arrive (at the 5 and 15 seconds marks), the existing queries pause their execution and the scheduler makes way for the higher priority query.
 As soon as a higher priority query finishes its execution (i.e. at the 7 and 16 seconds marks), other low priority queries simply resume their execution.
 
-The result of this experiment shows that \sys{}'s scheduler design naturally supports 
-query suspension, which is an important concern in workload management. 
+The result of this experiment also demonstrates that \sys{}'s scheduler design naturally supports query suspension, which is an important concern in workload management. 
 
 \subsubsection{Proportional Priority}\label{sssec:pp-policy-exp}
-The goal of this experiment is to verify the scheduler's behavior to the proportional priority policy (cf. 
-Section~\ref{ssec:proportional-priority}).
+The goal of this experiment is to verify the scheduler's behavior to the proportional priority policy (cf. Section~\ref{ssec:proportional-priority}).
 In this policy, the CPU allocation to query classes should be in accordance to their priority values.
 
 We pick two queries from each SSB class, and assign them a priority value. 
@@ -252,18 +235,18 @@ Figure~\ref{fig:q11-q41-throughput} plots the result of this experiment and show
 The throughput for the $Q4.1$ stream is not affected considerably by the choice of the implementation. 
 However the throughput of the $Q1.1$ stream is improved significantly using the learning implementation, and it is upto 3x better than the throughput using the non-learning implementation. 
 The reasons for the improvement are as follows:
-Following the result of the previous experiment (cf. Figure~\ref{fig:non-learning-comparison}),
-in the non-learning implementation, $Q1.1$ which has shorter work orders, gets starved of CPU resources due to $Q4.1$, which has longer duration work orders. 
+Following the result of the previous experiment (cf. Figure~\ref{fig:non-learning-comparison}), in the non-learning implementation, $Q1.1$ which has shorter work orders, gets starved of CPU resources due to $Q4.1$, which has longer duration work orders. 
 In the learning-based implementation however, the $Q1.1$ stream gets its fair share of CPU resource (more than that in the non-learning implementation). 
 Therefore, $Q1.1$'s performance is improved, resulting in its increased throughput. 
 
 This experiment highlights a two-fold impact of the learning module -- first, it plays a crucial role in the fair policy enforcement. 
-Second, it improves performance of queries with lower CPU requirements when they are competing with queries with higher CPU requirements, thereby also increasing overall system throughput with such mixed and diverse workloads. 
+Second, it improves performance of queries with lower CPU requirements when they are competing with queries with higher CPU demands, thereby also increasing overall system throughput with such mixed and diverse workloads. 
 
-\subsection{Experiment with Skewed Data}
-In this experiment we test the learning capabilities of the \sys{} scheduler under the presence of skew. 
-We introduce skew in the dataset as described in Section~\ref{ssec:workload}, and once again execute $Q1.1$ and $Q4.1$ on the skewed dataset.
-We sort the skewed \textit{lineorder} table on the \textit{lo\textunderscore quantity} column, so that the impact of skew is amplified, i.e. on the data blocks when the predicate $lo\textunderscore quantity \leq 25$ is evaluated, very few tuples are selected for some blocks, and for other blocks a large number of tuples are selected.
+\subsection{Experiment with Skewed and Uniform Data}
+In this experiment we test the learning capabilities of the \sys{} scheduler under the presence and absence of skew (skew description in Section~\ref{ssec:workload}).
+We execute $Q1.1$ and $Q4.1$ on the skewed and uniform data.
+We sort the skewed \textit{lineorder} table on the \textit{lo\_quantity} column, to amplify the impact of skew. 
+For the predicate $lo\textunderscore quantity \leq 25$ on the skewed table, some blocks have high selectivity and others have low selectivity.
 
 \begin{figure}[t]
 	\centering
@@ -275,16 +258,17 @@ We sort the skewed \textit{lineorder} table on the \textit{lo\textunderscore qua
 	\vspace{-1em}
 \end{figure}
 	
-To test the scheduler's ability to learn in the presence of skew, we compare the predicted work order times for each query with the observed work order times for the same query.
+%To test the scheduler's ability to learn in the presence of skew, 
+We compare the predicted work order times for each query with its observed work order times. % for the same query.
 %For completion, we perform the same experiment on the skewed data and uniform data. 
-For this experiment, we use both the skewed and uniform data.
+%For this experiment, we use both the skewed and uniform data.
 Figure~\ref{fig:pred-vs-observed-time-per-wo} presents the results of this experiment, with relative error of the prediction on the Y-axis and time on X-axis.
 We can see that the relative error is very low in both the datasets for both queries. 
 The execution of $Q1.1$ with skewed data takes longer than the uniform dataset.
 The intermediate peaks in the relative error correspond to phase change in the execution plan. 
 Note that the scheduler learns the phase changes quickly, and adjusts its estimates after each phase change. 
 
-\begin{figure}[b]
+\begin{figure}[]
 	\centering
 	\subfigure[Skewed dataset]{\includegraphics[]{figures/q11-q41-prediction-accuracy-skew-data.pdf}}
 	\subfigure[Uniform dataset]{\includegraphics[]{figures/q11-q41-prediction-accuracy-uniform-data.pdf}}

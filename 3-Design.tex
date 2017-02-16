@@ -12,7 +12,7 @@ Recall from Section~\ref{sec:background}, a description of the work carried out 
 The Query Manager generates schedulable work orders for each active operator node in the DAG. 
 It also runs a rudimentary DAG traversal algorithm (described in Appendix~\ref{apx:DAG-algo}) to determine when to activate nodes in the DAG. 
 
-\begin{figure}
+\begin{figure}[]
 	\centering
 	\includegraphics[width=\columnwidth]{figures/Scheduler-Architecture.pdf}
 	\vspace*{-1.5em}
@@ -28,8 +28,8 @@ The policy is described in \textit{Policy Specifications}, which is an
 abstraction that governs how resources are shared among concurrent queries. 
 
 Policy Enforcer (PE) and various Query Managers (QM) communicate with each other as follows:
-\textbf{QM} $\rightarrow$ \textbf{PE}: Provide work orders of the managed query for dispatching them for execution.
-\textbf{PE} $\rightarrow$ \textbf{QM}: Upon every work order completion, send a signal so that Query Manager can then decide if new nodes in the DAG can be activated, and if existing nodes can be marked as completed.
+\textbf{QM}$\rightarrow$\textbf{PE}: Provide work orders of the managed query for dispatching them for execution.
+\textbf{PE}$\rightarrow$\textbf{QM}: Upon every work order completion, send a signal so that QM can then decide if new nodes in the DAG can be activated, and if existing nodes can be marked as completed.
 A detailed description of the Policy Enforcer is present in Section~\ref{ssec:policy-enforcer}. 
 
 The Policy Enforcer contains a \textit{Load Controller} module, which is
@@ -39,7 +39,7 @@ A new query in the system presents its resource requirements for its lifetime in
 %The estimates provided in the Resource Map can come from the query optimizer or some other mechanism, which is irrelevant to the scheduler.
 A sample resource map is presented in Appendix~\ref{apx:resource-map}.
 
-The Load Controller determines the action to be taken with the new query. 
+The Load Controller determines the fate of a new query. 
 If enough resources are available, it admits the query.
 If the system can potentially thrash due to the admission of the new query, it
 can take a number of decisions, including wait-listing the query or suspending older active queries to free up resources for the new query.
@@ -65,69 +65,6 @@ New work orders due to pipelining are generated similarly (details in Appendix~\
 \sys{} has two kinds of threads - a scheduler thread and many worker threads that perform the actual relational operations as defined by \textit{work orders}. 
 More details about the thread model are found in Appendix~\ref{apx:thread}
 
-%\subsection{Work Orders}\label{ssec:workorders}
-%Work done for executing a query in \sys{} is split into multiple \textit{work 
-%orders}, as highlighted in Section~\ref{sec:background}. 
-%A work order contains all the information that is needed to process tuples in a given 
-%data block. 
-%A work order encapsulates the relational operator that is being applied, the relevant 
-%input relation(s), location of the input data block, any predicate(s) to be 
-%applied on the tuples in the input block, and descriptors to other run-time 
-%structures (such as hash tables).
-%%The input data location is specified in terms of a unique storage block ID, a join hash table identifier, or an aggregation hash table identifier. 
-%%In NUMA settings, a work order can also provide a preferred site for execution in the 
-%%form of a NUMA socket ID. 
-%%The scheduler then uses this information to make a 
-%%\textit{data-locality aware} scheduling decision. \reminder{Should we remove NUMA 
-%%because there are no experiments?}
-%
-%Consider the following full table scan query to illustrate the work order concept:
-
-%\begin{lstlisting}[language=SQL, 
-%basicstyle=\ttfamily\small, 
-%showstringspaces=false,
-%keywordstyle=\color{cardinal}\bfseries, 
-%emph={San,Diego}, 
-%emphstyle=\color{bondiblue}\bfseries]
-%SELECT name FROM Employee WHERE city=`San Diego'
-%\end{lstlisting}	
-%\vspace{-0.4em}
-
-%The plan for this query has a simple \textit{selection} operator.  
-%For the selection operator, the number of work orders is same as the number of input blocks in the \verb+Employee+ table. 
-%Each selection work order contains the following information:
-%\begin{itemize}
-%\itemsep0.1em
-%\item {Relation: \verb+Employee+, attribute: \verb|name|}
-%\item {Predicate: \lstinline[language=SQL, 
-%                                   basicstyle=\ttfamily\small, 
-%                                   keywordstyle=\color{cardinal} \bfseries,
-%                                   emph={San,Diego}, 
-%                                   emphstyle=\color{bondiblue}\bfseries]|city=`San Diego'|}
-%\item {The unique ID of an input block from the \verb+Employee+ table}
-%\end{itemize}
-%
-%The work orders for a join operation %(illustrated below) 
-%are slightly more complicated. 
-%For example, a \textit{probe work order},  contains the unique ID of the probe 
-%block, 
-%%(as described in Section~\ref{ssec:storage-manager}, a hash table is stored in a block in the buffer pool), build and probe relations, 
-%a pointer to the hash table, the projected attributes, and the join predicate.
-%%Each operator algorithm (e.g. a scan or the build/probe phase of a hash-join) 
-%%in the system has a C++ class that is derived from 
-%%a root abstract base class that has a virtual method called \verb|execute()|.
-%%Executing a work order simply involves calling the \verb|execute()| method 
-%%on the appropriate operator algorithm C++ class object. 
-
-\begin{figure}[]
-	\centering
-	\includegraphics[width=\columnwidth]{figures/QueryPlan.pdf}
-	\vspace*{-2em}
-	\caption{A join query and its DAG}
-	\label{fig:dag}
-%	\vspace*{-1.5em}
-\end{figure}
-
 \subsection{Policy Enforcer}\label{ssec:policy-enforcer}
 The Policy Enforcer assigns a probability value to each active query in the system. 
 The scheduling decisions are taken based on these probabilities. 
@@ -138,41 +75,24 @@ We describe the Policy Enforcer in depth in Appendix~\ref{apx:policy-enforcer}.
 However this raises some questions: How do we know the future execution time of a work order? 
 %Second, what happens if the future execution time of work orders keep changing? 
 Why should we compute the probability using future work order execution times instead of assigning fixed probabilities to queries?
-We answer these questions by introducing a Learning agent module in the next section. 
+We answer these questions by introducing a Learning agent module next. 
  
 %In the beginning of a workload execution, the Policy Enforcer uses some default 
 %probability values until the Learning Agent collects enough data so as to make a prediction. 
 \subsection{Learning Agent}\label{ssec:learning}
 The Learning Agent module is responsible for predicting the execution times of the future work orders for a given query. 
 It gathers the history of executed work orders of a query and applies a prediction model on such a history to estimate the execution time of a future work order.
-This predicted execution time is used to compute the probability assigned to each query (cf. Section~\ref{sec:policy} for probability derivations).  
-%The Learning agent also helps us relax our earlier assumption, about knowledge of execution times of the future work orders for the queries. 
-%In a real implementation, such information is not available.
-%To get around this issue, we incorporate a Learning Agent module, described in the next section. 
-%It predicts the execution time of future work orders, using a learning methodology. 
-%Such predicted execution times are used to compute the probabilities assigned to the queries.
+This predicted execution time is used to compute the probability assigned to each query (cf. Section~\ref{sec:policy} for probability derivations).
 
-%In this section we describe the Learning Agent module in the scheduler. 
-%As described in Section~\ref{ssec:policy-enforcer}, the Learning Agent converts predicted execution times of future work orders to probabilities, which are used for the scheduling decisions.
-One might question the need of the Learning Agent and instead consider assigning a fixed probability value to each query (say $1/N$, with $N$ queries in the fair policy).
-In the following section, we address this issue. 
-A motivational example for the learning agent is described in Appendix~\ref{apx:learning-motivation}.
-%Later we explain the methodology used by the Learning Agent.
+An alternative to the Learning Agent could be a static method that assigns fixed probability values to active queries in the system. 
+We now try to justify the need for the Learning Agent and highlight the limitations of the alternative mentioned above.
+In this regard, an example is described in Appendix~\ref{apx:learning-motivation}.
 
-It is clear that the work order execution times for both queries are different, and the difference between them changes over time. 
-If the scheduler assigns the same probability to both queries (i.e. 0.5), it is equally likely to schedule a work order from either of them. 
-As a result, the queries will have different CPU utilization times in a given epoch, thus resulting in an unfair CPU allocation. 
-In order to be consistently fair in allocating CPU resources to the queries, we should continuously observe the work order execution times of queries and adjust the CPU allocation accordingly. % update the predicted work order execution times. 
-%Later, we substantiate this explanation by an experiment (c.f. Section~\ref{ssec:learning-impact}).
-
-In general, the time per work order metric doesn't stay the same throughout a query's lifetime.
+The time per work order metric doesn't stay the same throughout a query's lifetime, for reasons such as variations in input data (e.g. skew), CPU characteristics of different relational operators (e.g. scan vs hash probe).
 In each phase of the query, the time per work order is different.
 As the query plan gets bigger, the number of phases in the plan increase.
 In addition, different queries may be in different phases at a given point in time.
 To make things more complicated, queries can enter or leave the system at any time.
-
-%$Q4.1$, the execution exhibits different ``phases'', each belonging to different relational operators in the query such as selection, building the hash table, probing the hash table, aggregation etc. 
-%\reminder{Describe in the figure the begin and end times of various phases}
 
 Therefore it is difficult to statically pick a proportion of CPU to allocate to the concurrent queries. 
 Hence there is a need to ``learn'' the various phases in the query execution and dynamically change the proportion of resources allocated to each query, based on each query's phase.
@@ -187,7 +107,7 @@ Figure~\ref{fig:scheduler-cycle} shows the Learning Agent's interaction with the
 %It receives the execution statistics of an  executed work order, and uses this information 
 %to predict the execution time of the future work orders. 
 
-\begin{figure}[h]
+\begin{figure}[]
 	\centering
 	\includegraphics[width=\linewidth]{figures/Compact-SchedulerCycle.pdf}
 	\vspace{-2em}
@@ -203,18 +123,7 @@ The Learning Agent stores the execution times of the work orders grouped by thei
 \sys{}'s scheduler currently uses linear regression as the prediction model.
 We chose linear regression as it is fast, accurate, and efficient w.r.t. the computational and the storage requirements of the model. 
 %(New models can be easily added using an abstraction mechanism.) 
-To lower the CPU and memory overhead of the model, we limit the amount of execution statistics stored in the Learning Agent.
-We discard records beyond a certain time window. 
-When all the work orders of an operator finish execution, we remove its records completely. 
-In a query, if multiple relational operators are active, linear regression combines the statistics of all active operators and predicts a single value for the next work order execution time.
-%There are few reasons for the choice of our prediction methodology: We want a fast 
-%technique so that the prediction itself doesn't become a  bottleneck in the core 
-%execution 
-%of the queries. The prediction method should be simple and reasonably accurate. The 
-%linear regression approach is inexpensive and straightforward to reason about. It reacts 
-%quickly and adapts well to the change of operators (and corresponding change in 
-%execution times of work orders) that happen during the DAG traversal described in 
-%Algorithm~\ref{alg:dag-traversal}.
+More details about our usage of linear regression is described in Appendix~\ref{apx:linear-regression-usage}.
 
 We note that the problem of estimating the query execution time is well-studied 
 ~\cite{duggan2011performance, wu2013towards, li2012gslpi, 

@@ -60,21 +60,20 @@ Alternate actions could be to re-prioritize, kill, or resubmit the query, as des
 
 Many commercial databases systems offer workload management solutions~\cite{res_gov, rm, DB2, teradatawm, gpdb, hpwm}.
 A common theme in such solutions is to provide admission control capabilities, classifying queries based on their estimated resource requirements (like CPU, memory, I/O etc.), encoding resource allocation limits as resource pools and mapping workloads to the resource pools. 
-While such estimation methods can be used to complement the approach that is proposed here, 
+While such estimation methods can be used to complement our approach, 
 \sys{}'s scheduler can also work without such detailed estimation techniques. 
 
 Resource management is a crucial problem for database systems. 
 Mehta and Dewitt's~\cite{mehta1993dynamic} memory allocation scheme
-grouped queries by their estimated memory requirements, and used a dynamic 
-algorithm to allocate memory to different query classes. 
-Davison and Graefe introduced a resource brokering model~\cite{davison1995dynamic} to minimize query execution times with a constraint of fairness. 
+grouped queries by their estimated memory requirements, and allocated memory to different query classes. 
+Davison and Graefe introduced a resource brokering model~\cite{davison1995dynamic} to minimize query execution times with a constraint of fairness.
 Such resource management techniques are complimentary to \sys{}'s execution engine 
 and can also be incorporated in its buffer manager. 
 
 Predicting query execution time is an active area of research. 
-Wu et al.~\cite{wu2013towards, wu2014uncertainty} developed an analytical model using optimizer's cost model to estimate the CPU and I/O costs for individual query, and used a queueing model to estimate the execution times of concurrent queries in a workload. 
+Wu et al.~\cite{wu2013towards, wu2014uncertainty} developed an analytical model using optimizer's cost model to estimate the CPU and I/O costs for individual query, and used a queueing model to estimate the execution times of concurrent queries in a workload.
 Duggan et al.~\cite{duggan2011performance} presented a model to estimate the performance impact of running concurrent queries.
-Our Learning Agent can benefit from such prediction models to improve its prediction accuracy, but can also function without them. 
+Our Learning Agent's prediction accuracy can benefit from such models, but can also function without them. 
 %Despite these advances in the area of execution time estimation, using 
 %inaccurate estimates for achieving fairness may result into unfair schedules. 
 
@@ -107,7 +106,7 @@ Our Learning Agent can benefit from such prediction models to improve its predic
 %of concurrent queries. 
 
 Scheduling problem has also been studied in the OS and networks community. 
-In one of the original works on scheduling, Kay and Lauder~\cite{kay1988fair} described \textit{Share} -  a scheduler that ensures fairness for all the system users.
+Kay and Lauder~\cite{kay1988fair} described \textit{Share}, a pioneering scheduler that ensured fairness for all the system users.
 Our probabilistic framework for scheduling is inspired by the seminal lottery scheduling~\cite{lottery-scheduling} by Waldspurger and Weihl,
 in which different processes are assigned certain number of lottery tickets. 
 A lottery is conducted after every fixed time intervals and the winner process is allowed to execute in the next time slice. 
@@ -129,9 +128,9 @@ This design choice helps simplifying our core relational operator execution algo
 
 \sys{}'s scheduler design aligns to the idea that scheduling must be transparent, fine-grained, and most importantly the need to separate mechanisms from policies~\cite{LampsonS76} - a common theme found in the OS literature.
 
-In the networking literature, Deficit Round Robin~\cite{shreedhar1996efficient} is a classical technique for packet scheduling. 
-Our work is similar to them as their scheduling takes into account the packet sizes, which is analogous to the work order execution times.
-However their scheduling decision is inherently round robin based (with additional maintenance of quantum information), where as our scheduling decisions are based on dynamic probabilities. 
+Deficit Round Robin (DRR)~\cite{shreedhar1996efficient} is a technique for network packet scheduling.
+Our usage of work order execution time as a metric is similar DRR's usage of packet sizes. 
+However DRR scheduling is inherently round robin based (with additional maintenance of quantum information), where as our scheduling is based on dynamic probabilities. 
 
 \reminder{Removed cluster scheduling refs}
 %Cluster scheduling has received a wide attention recently.
