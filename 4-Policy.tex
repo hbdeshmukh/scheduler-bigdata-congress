@@ -1,12 +1,9 @@
 % !TEX root = scheduler.tex
 \section{Policy Derivations and Load Controller Implementation}\label{sec:policy}
-%The discussions above outline how a variety of different policies can be specified with the \sys{} scheduler. 
-%
-%We also present the implementations of the load control mechanisms in the system.
 Our work focuses on two critical system resources for in-memory database deployments: CPU and memory. 
 The policies treat CPU as a \textit{divisible resource}, and the policy specifications are defined in terms of relative CPU utilizations of queries or query classes.
 The load controller implementation treats memory as a \textit{gating resource} and its goal is to avoid memory thrashing.
-A justification of the choice of resources for policies and load controller implementations is in Appendix~\ref{apx:resource-discussion}.
+We justify the choice of resources for policies and load controller implementations in Appendix~\ref{apx:resource-discussion}.
 
 Next, we present different policies currently implemented in \sys{} to highlight how one can encode policies to work with the probability-based scheduling framework. 
 %As noted above the policies are specified in terms of the CPU resource. 
@@ -29,7 +26,7 @@ For priority-based policies, queries are presumed to be tagged with priority (in
 Next, we describe the probabilistic framework that is used to implement various policies. 
 The notations used in the formulations are declared in Table~\ref{table:policy-notations}.
 
-\begin{table}[]
+\begin{table}[t]
 \centering
 \begin{tabular}{|p{1.3cm}|p{6.5cm}|}
 \hline
@@ -44,13 +41,13 @@ The collective resources that are allocated to a query class (i.e. all queries w
 %in a two class policy, an exponential scale could be used to specify that the high priority class should be given 10 times the resources as the low priority class. 
 \\ \hline
 \end{tabular}
-\caption{Policy Interpretations}
+\caption{Interpretations of the sample policies implemented in \sys{}}
 \label{table:policy-interpreatations}
 	\vspace{-2.5em}
 \end{table}
 
 \subsection{Fair Policy Implementation}\label{ssec:fairness}
-\begin{table}[]
+\begin{table}[t]
 	\centering
 	\begin{tabular}{|p{0.1\columnwidth}|p{0.75\columnwidth}|}
 		\hline

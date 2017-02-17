@@ -439,3 +439,31 @@ number of joins in the query, the relations being joined, the filter and aggrega
 attributes. 
 The grouping of queries in various classes makes this benchmark suitable for our 
 experiments, as it provides a way of assigning priorities to the queries based on their class. 
+
+\section{Proportional Priority}\label{apx:pp-policy-exp}
+Now we examine the scheduler's behavior to the proportional priority policy (cf. Section~\ref{ssec:proportional-priority}, note that higher priority integer implies higher importance).
+%In this policy, the CPU allocation to query classes should be in accordance to their priority values.
+
+We pick two queries from each SSB class, and assign them a priority value. 
+Our priority assignment reflects the complexity of the queries from the corresponding class. 
+For instance, query class 1 has one join, class 2 has two joins and so on.
+Recall that in our implementation a higher priority integer implies higher importance cf. 
+Section~\ref{ssec:proportional-priority}.
+
+Figure~\ref{fig:pp-cpu-util} shows the CPU allocation among concurrent queries in the proportional priority policy.
+We can see that a higher priority query gets proportionally higher share of CPU as 
+compared to the lower priority queries.
+When all queries from the priority class 8 finish their execution (11 seconds), the 
+lower priority classes elastically increase their CPU utilization, so as to use all the CPU 
+resources. 
+Also note that among the queries belonging to the same class, the CPU utilization is 
+nearly the same, as described in the policy specifications.
+
+\begin{figure}[t]
+	\centering
+	\includegraphics[width=\columnwidth]{figures/ssb-priority-uniform-2queries-perclass-cpu-util.pdf}
+	\vspace{-2.5em}
+	\caption{CPU allocation for proportional priority policy. Note that $a.b  (N)$ denotes a SSB query $a.b$ with priority $N$}
+	\label{fig:pp-cpu-util}
+	%	\vspace{-1em}
+\end{figure}

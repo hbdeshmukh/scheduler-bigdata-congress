@@ -1,8 +1,7 @@
 % !TEX root = scheduler.tex
 \section{Background}\label{sec:background}
-In this section we introduce aspects about \sys{} that are needed to 
-describe the proposed scheduler framework.
-\sys{} is a relational database engine 
+In this section we establish some prerequisites for \sys{}'s proposed scheduler framework.
+\sys{} is an open-source relational database engine 
 % and SQL as its query language.  \sys{} 
 designed to efficiently leverage contemporary hardware aspects such as large main memory, multi-core, and multi-socket server settings. 
 %The system aims to deliver high performance in read-mostly data warehousing 
@@ -11,19 +10,12 @@ designed to efficiently leverage contemporary hardware aspects such as large mai
 % However,  the implementation of \sys{} largely targets settings in which the  entire 
 %database fits in memory.
 
-The control flow associated with query execution in \sys{} involves 
-parsing the query, and then optimizing the query using a cost-based query 
-optimizer.
-The optimized query plan is represented as a Directed Acyclic 
-Graph (DAG) of relational operator primitives. 
+The control flow associated with query execution in \sys{} involves first parsing the query, and then optimizing the query using a cost-based query optimizer.
+The optimized query plan is represented as a Directed Acyclic Graph (DAG) of relational operator primitives. 
 %Currently, the system employs hash-based implementation for join and aggregate operators. 
-
 The query plan DAG is then sent to a \textit{scheduler}, which is the focus of this paper. 
 The scheduler runs as a separate thread and coordinates the execution of all queries. 
-In addition to the scheduler, the database engine has a pool of worker 
-threads, where the computations on the data are carried out. 
-% Commenting this line as it is repeated in thread model section. 
-%All workers read and write data from a buffer pool, that is managed by a storage manager. 
+Apart from the scheduler, \sys{} has a pool of worker threads, that carry out computations on the data. 
 
 \sys{} uses a query execution paradigm (built using previously proposed approaches~\cite{qsstorage,morsel}) in which a query is executed as a sequence of \textit{work orders}. 
 A work order operates on a data block, which is treated as a self-contained mini-database~\cite{qsstorage}. 

@@ -72,7 +72,7 @@ In this section, we evaluate various policies currently implemented in the syste
 %All the policies are specified in terms of the CPU resources. 
 %With these experiments, 
 Specifically, we verify if the actual CPU allocation among queries is in accordance with the policy specifications.
-To calculate CPU utilization, we use the start and end times for each work order. % and use this log to calculate the CPU utilization.
+To calculate CPU utilization, we use a log of start and end times for all work orders. % and use this log to calculate the CPU utilization.
 
 \subsubsection{Fair}
 In this experiment, we execute all 13 queries from the SSB concurrently using the fair policy. 
@@ -80,7 +80,7 @@ As described in Section~\ref{ssec:fairness}), the policy specification implies a
 The CPU utilization of the queries is depicted in Figure~\ref{fig:fair-cpu-util}.
 As we can see, the CPU utilization of all the queries remains nearly equal to each other during the workload execution, despite queries belonging to different query classes with varying query complexities.
 
-\begin{figure}[]
+\begin{figure}[t]
 	\centering
 	\includegraphics[width=\columnwidth]{figures/ssb-all-uniform-fair-cpu-util.pdf}
 	\vspace{-2.5em}
@@ -92,18 +92,9 @@ Notice that the available CPU resources also get automatically distributed elast
 This elasticity behavior allows \sys{} to fully utilize the CPU resources at \textit{all} times.
 \subsubsection{HPF}
 In this experiment, we validate whether the implementation matches the policy 
-specification of HPF (Highest Priority First, cf. Section~\ref{ssec:hpf}),
-which requires that when scheduling work orders, higher priority classes be 
-preferred over lower priority classes. 
-
-\begin{figure}[b]
-	\centering
-	\includegraphics[width=\columnwidth]{figures/ssb-hpf-all.pdf}
-	\vspace{-2.5em}
-	\caption{CPU utilization in HPF policy. Note that $a.b  (N)$ denotes a SSB query $a.b$ with priority $N$}
-	\vspace{-1em}
-	\label{fig:hpf-all}
-\end{figure}
+specification of HPF (Highest Priority First, cf. Section~\ref{ssec:hpf}).
+%which requires that when scheduling work orders, higher priority classes be 
+%preferred over lower priority classes. 
 
 %As before, we use all the 13 SSB queries for this experiment, 
 All queries have the same priority value (1) except Q4.2 and Q4.3 which have a higher priority value (2). 
@@ -117,42 +108,50 @@ As soon as a higher priority query finishes its execution (i.e. at the 7 and 16 
 
 The result of this experiment also demonstrates that \sys{}'s scheduler design naturally supports query suspension, which is an important concern in workload management. 
 
-\subsubsection{Proportional Priority}\label{sssec:pp-policy-exp}
-The goal of this experiment is to verify the scheduler's behavior to the proportional priority policy (cf. Section~\ref{ssec:proportional-priority}).
-In this policy, the CPU allocation to query classes should be in accordance to their priority values.
-
-We pick two queries from each SSB class, and assign them a priority value. 
-The priorities assigned to the queries are based on the query complexity of their corresponding query class. 
-For instance, query class 1 has only one join, class 2 has two joins and so on.
-Recall that in our implementation a higher priority integer implies higher importance cf. 
-Section~\ref{ssec:proportional-priority}.
-
-Figure~\ref{fig:pp-cpu-util} shows the CPU allocation among concurrent queries in the proportional priority policy.
-We can see that a higher priority query gets proportionally higher share of CPU as 
-compared to the lower priority queries.
-When all queries from the priority class 8 finish their execution (11 seconds), the 
-lower priority classes elastically increase their CPU utilization, so as to use all the CPU 
-resources. 
-Also note that among the queries belonging to the same class, the CPU utilization is 
-nearly the same, as described in the policy specifications.
-
-\begin{figure}[]
+\begin{figure}[t]
 	\centering
-	\includegraphics[width=\columnwidth]{figures/ssb-priority-uniform-2queries-perclass-cpu-util.pdf}
+	\includegraphics[width=\columnwidth]{figures/ssb-hpf-all.pdf}
 	\vspace{-2.5em}
-	\caption{CPU allocation for proportional priority policy. Note that $a.b  (N)$ denotes a SSB query $a.b$ with priority $N$}
-	\label{fig:pp-cpu-util}
-	%	\vspace{-1em}
+	\caption{CPU utilization in HPF policy. Note that $a.b  (N)$ denotes a SSB query $a.b$ with priority $N$}
+	\vspace{-1em}
+	\label{fig:hpf-all}
 \end{figure}
 
-
+Due to space restriction, we present the evaluation of Proportional Priority policy in Appendix~\ref{apx:pp-policy-exp}.
+%\subsubsection{Proportional Priority}\label{sssec:pp-policy-exp}
+%Now we examine the scheduler's behavior to the proportional priority policy (cf. Section~\ref{ssec:proportional-priority}, note that higher priority integer implies higher importance).
+%%In this policy, the CPU allocation to query classes should be in accordance to their priority values.
+%
+%We pick two queries from each SSB class, and assign them a priority value. 
+%Our priority assignment reflects the complexity of the queries from the corresponding class. 
+%For instance, query class 1 has one join, class 2 has two joins and so on.
+%%Recall that in our implementation a higher priority integer implies higher importance cf. 
+%%Section~\ref{ssec:proportional-priority}.
+%
+%Figure~\ref{fig:pp-cpu-util} shows the CPU allocation among concurrent queries in the proportional priority policy.
+%We can see that a higher priority query gets proportionally higher share of CPU as 
+%compared to the lower priority queries.
+%When all queries from the priority class 8 finish their execution (11 seconds), the 
+%lower priority classes elastically increase their CPU utilization, so as to use all the CPU 
+%resources. 
+%Also note that among the queries belonging to the same class, the CPU utilization is 
+%nearly the same, as described in the policy specifications.
+%
+%\begin{figure}[]
+%	\centering
+%	\includegraphics[width=\columnwidth]{figures/ssb-priority-uniform-2queries-perclass-cpu-util.pdf}
+%	\vspace{-2.5em}
+%	\caption{CPU allocation for proportional priority policy. Note that $a.b  (N)$ denotes a SSB query $a.b$ with priority $N$}
+%	\label{fig:pp-cpu-util}
+%	%	\vspace{-1em}
+%\end{figure}
 \subsection{Impact of Learning on the Relative CPU Utilization}\label{ssec:learning-impact-cpu-util}
 In this experiment, we compare the learning-based scheduler implementation with a 
 non-learning based implementation (baseline).
 We perform the comparison using fair policy, which should be the easiest policy for a static method to realize.
 
 In the baseline, the probability assigned to each query remains fixed unless either a query is added or removed from the system.
-If there are $N$ active concurrent queries in the system, each query is assigned a probability $1/N$.
+If there are $N$ active concurrent queries in the system, each query gets a fixed probability $1/N$.
 %In the proportional priority implementation, if the distinct priority levels are $p_1, p_2 
 %\ldots p_k$, then priority $p_i$ gets a probability $\frac{p_i}{\sum\limits_{j = 
 %0}^{k} 
@@ -167,19 +166,19 @@ should be equal. % to each other, which means the ideal ratio is 1.
 Figure~\ref{fig:non-learning-comparison} shows the results of this experiment.
 %We restrict the X-axis until both the queries are under execution. 
 
-\begin{figure}[t]
+\begin{figure}[h]
 	\centering
 	\includegraphics[width=\columnwidth]{figures/q1-q11-ratio-cpu-util.pdf}
 	\vspace{-2em}
 	\caption{Ratio of CPU utilizations  $\frac{Q4.1}{Q1.1}$ for learning and non-learning 
 		implementations}
 	\label{fig:non-learning-comparison}
-	\vspace{-1.5em}
+%	\vspace{-1em}
 \end{figure}
 
 Observe in Figure~\ref{fig:non-learning-comparison}, that the ratio in the non-learning implementation is closer to 2, meaning that the 
 implementation is biased towards $Q4.1$. 
-Recall from Figure~\ref{fig:q1.1-q4.1-time-per-wo} that the time per work order for $Q4.1$ is higher than $Q1.1$. 
+This behavior stems from the fact that the time per work order for $Q4.1$ is higher than $Q1.1$ (c.f. Figure~\ref{fig:q1.1-q4.1-time-per-wo} in Appendix~\ref{apx:learning-motivation}).
 In contrast, the ratio of CPU utilizations in the learning implementation is nearly 1.
 The learning based implementation can identify various phases in query execution for 
 both the queries and adaptively change the CPU allocation as per the changing demands 
@@ -213,9 +212,10 @@ demands of queries and therefore does an unfair allocation of CPU resources.
 %These experiments %described in Section~\ref{ssec:learning-impact} and Section~\ref{sssec:makespan-comparison} 
 %suggest that the learning implementation not only achieves its primary goal, but also helps improving the performance of the SSB workload. 
 \subsection{Impact of Learning on Performance}\label{ssec:learning-impact-perf}
-In this experiment we analyze the impact of the learning-based approach on the performance of queries. 
-We use the same setup as the previous experiment and begin the execution with 10 queries; with five instances each of $Q4.1$ and $Q1.1$ running concurrently. 
-As soon as one instance of $Q4.1$ finishes its execution, another instance of $Q4.1$ enters the system (likewise for $Q1.1$).
+Here we analyze the impact of the learning-based approach on the performance of queries. 
+We use two query streams, one for $Q1.1$ and another for $Q4.1$.
+%We use the same setup as the previous experiment and begin the execution with 10 queries; with five instances each of $Q4.1$ and $Q1.1$ running concurrently. 
+As one instance of $Q4.1$ finishes execution, another instance of $Q4.1$ enters the system (likewise for $Q1.1$).
 We compare the throughput for both $Q4.1$ and $Q1.1$ using the learning implementation of the fair policy against its non-learning implementation.
 
 %In real life workloads, there is often a mix of queries with different query execution times.
@@ -231,7 +231,7 @@ We compare the throughput for both $Q4.1$ and $Q1.1$ using the learning implemen
 %We can observe that the throughput for the user issuing longer queries is less impacted by the change in the policy implementation. 
 %However, the user issuing shorter queries is highly benefited using a learning based implementation.
 %The throughput is nearly \reminder{add number}X better in the learning implementation compared to the non-learning one. 
-Figure~\ref{fig:q11-q41-throughput} plots the result of this experiment and shows the throughput for each query ``stream''. 
+Figure~\ref{fig:q11-q41-throughput} plots the result of this experiment and shows the throughput for each query stream. 
 The throughput for the $Q4.1$ stream is not affected considerably by the choice of the implementation. 
 However the throughput of the $Q1.1$ stream is improved significantly using the learning implementation, and it is upto 3x better than the throughput using the non-learning implementation. 
 The reasons for the improvement are as follows:
@@ -278,12 +278,13 @@ Note that the scheduler learns the phase changes quickly, and adjusts its estima
 \end{figure}
 
 \subsection{Load Control}
-The setup for this experiment is the same as that described in Section~\ref{sssec:pp-policy-exp}.
-%The buffer pool however is sized down to 70 GB, in order to create an environment 
-%of memory pressure.
-We set the load controller policy to specify that the threshold for suspending queries is 56 GB, which means that as soon as the buffer pool size grows close to the threshold, the load control mechanism kicks in.
+In this experiment, we examine the load control capabilities of \sys{}'s scheduler.
+We use two queries from each SSB query class.
+The queries from each query class have been assigned a priority value, that reflects the complexity of the queries from the class (e.g. number of joins in the query plan).
+We configure the load controller with the threshold for suspending queries as 56 GB. 
+As the buffer pool size grows close to the threshold, the load control mechanism kicks in.
 
-\begin{figure}[t]
+\begin{figure}[]
 	\centering
 	\includegraphics[width=\columnwidth]{figures/load-control-cpu-util.pdf}
 	\caption{Load control: An SSB query $a.b$ with priority $N$ is denoted as $a.b (N)$}
@@ -291,10 +292,10 @@ We set the load controller policy to specify that the threshold for suspending q
 \end{figure}
 
 %Recall from Section~\ref{sec:background} that the 
-\sys{}'s buffer pool stores not just the tables but also hash tables used for joins and aggregations.
+\sys{}'s buffer pool stores the relational tables as well as hash tables used for joins and aggregations.
 %The LRU-k based buffer pool implementation may evict cold pages if there is a need to make more memory available.
 If the requested memory cannot be allocated within the memory limits, the load controller can suspend a query with the highest memory footprint. 
-In the current implementation, the check for reactivating the suspended query is performed upon every query completion and it involves similar memory considerations as that described above. 
+In the current implementation, we check for reactivating the suspended query upon every query completion using similar memory considerations as those described above. 
 Figure~\ref{fig:load-control-cpu-util} shows the CPU utilization of the queries.
 
 The execution begins with 2 queries each from the classes with priority values 1, 2 and 4.

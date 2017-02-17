@@ -41,10 +41,9 @@ A sample resource map is presented in Appendix~\ref{apx:resource-map}.
 
 The Load Controller determines the fate of a new query. 
 If enough resources are available, it admits the query.
-If the system can potentially thrash due to the admission of the new query, it
-can take a number of decisions, including wait-listing the query or suspending older active queries to free up resources for the new query.
-The Policy Enforcer maintains queues for wait-listed and suspended queries as shown in Figure~\ref{fig:scheduler-architecture}.
-The Load Controller is described in detail in Section~\ref{ssec:load-control-mech}.
+If the system risks thrashing due to the admission of the new query, it can take a number of decisions, including wait-listing the query or suspending older active queries to free up resources for the new query.
+%The Policy Enforcer maintains queues for wait-listed and suspended queries as shown in Figure~\ref{fig:scheduler-architecture}.
+We describe the Load Controller in Section~\ref{ssec:load-control-mech}.
 
 The Policy Enforcer works with another module called the \textit{Learning Agent}. 
 Execution statistics of completed work orders are passed from the Policy Enforcer to the Learning Agent.
@@ -68,15 +67,16 @@ More details about the thread model are found in Appendix~\ref{apx:thread}
 \subsection{Policy Enforcer}\label{ssec:policy-enforcer}
 The Policy Enforcer assigns a probability value to each active query in the system. 
 The scheduling decisions are taken based on these probabilities. 
-\reminder{Update the line below}
-We also saw the connection between the probability value and the execution time of future work order, with fair policy as a case in point. 
-We describe the Policy Enforcer in depth in Appendix~\ref{apx:policy-enforcer}.
+A probability value assigned to a query indicates the likelihood of a work order from that query being scheduled. 
+The manner in which these probability values assigned to the queries are adjusted helps enforcing the policy. 
+The formulations of these probabilities for various policies are expressed in Section~\ref{sec:policy}.
 
-However this raises some questions: How do we know the future execution time of a work order? 
-%Second, what happens if the future execution time of work orders keep changing? 
-Why should we compute the probability using future work order execution times instead of assigning fixed probabilities to queries?
-We answer these questions by introducing a Learning agent module next. 
- 
+An important information for determining such a probability value is the estimate about the run times of future work orders of the query.
+Using these estimates for all the active queries, the Policy Enforcer can tweak the resource allocation to queries with the goal of adhering to the specified policy of resource sharing. 
+In the next section, we describe the technique to estimate the execution time of future work orders of a query.
+%%Second, what happens if the future execution time of work orders keep changing? 
+%Why should we compute the probability using future work order execution times instead of assigning fixed probabilities to queries?
+%We answer these questions by introducing a Learning agent module next. 
 %In the beginning of a workload execution, the Policy Enforcer uses some default 
 %probability values until the Learning Agent collects enough data so as to make a prediction. 
 \subsection{Learning Agent}\label{ssec:learning}
