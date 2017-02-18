@@ -85,8 +85,8 @@ It gathers the history of executed work orders of a query and applies a predicti
 This predicted execution time is used to compute the probability assigned to each query (cf. Section~\ref{sec:policy} for probability derivations).
 
 An alternative to the Learning Agent could be a static method that assigns fixed probability values to active queries in the system. 
-We now try to justify the need for the Learning Agent and highlight the limitations of the alternative mentioned above.
-In this regard, an example is described in Appendix~\ref{apx:learning-motivation}.
+We now justify the need for the Learning Agent and highlight the limitations of the alternative mentioned above.
+An illustrative example is presented in Appendix~\ref{apx:learning-motivation}.
 
 The time per work order metric doesn't stay the same throughout a query's lifetime, for reasons such as variations in input data (e.g. skew), CPU characteristics of different relational operators (e.g. scan vs hash probe).
 In each phase of the query, the time per work order is different.

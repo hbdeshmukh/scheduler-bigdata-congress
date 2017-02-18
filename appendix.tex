@@ -50,6 +50,39 @@ in the system has a C++ class that is derived from a root abstract base class th
 Executing a work order simply involves calling the \verb|execute()| method 
 on the appropriate operator algorithm C++ class object. 
 
+\section{Storage Management in \sys{}}\label{apx:storage-manager}
+Data organization in the \sys{} storage manager holds the key to intra-query 
+parallelism~\cite{qsstorage}. 
+Data in a relation are organized in the form of blocks. 
+Each block holds a collection of tuples from a single table. 
+A unique aspect of the storage organization in \sys{} is that blocks are considered to 
+be independent and self-contained mini-databases. 
+Thus, when creating an index, instead of creating a global index with 
+``pointers'' to the tuples in blocks, the index fragments are stored within the blocks. 
+Each block is internally organized into \textit{sub-blocks}. 
+There is one \textit{tuple storage sub-block}, which could be in a row store or a 
+column store format.
+%\reminder{Should we add more formats like compressed column store etc?}. 
+In addition, each block has one sub-block for each index created on the table. 
+CSB+-tree~\cite{csb+-tree} and BitWeaving~\cite{bitweaving} 
+indices are currently supported. 
+The blocks are free to self-organize themselves and thus a given table may have blocks in different formats. 
+For example, new blocks in a table may be in a row store format, while older blocks may 
+be in a column store format.
+%The block size is configurable %(in fact blocks in the same table can be of 
+%%different sizes), %and the recommended block size is 4 MB.
+
+This storage block design, as articulated earlier in~\cite{qsstorage} enables the query execution to be broken down into a set of independent tasks on each block. 
+This is a crucial aspect that we leverage in the design of our scheduler. 
+
+The storage manager also contains a \textit{buffer pool manager}. 
+It organizes the memory as an array of slots, and overlays blocks on top of the slots (so block sizes are constrained to be a multiple of the underlying slot size). 
+Memory allocations for data blocks for \textit{both} permanent and temporary tables are always made from a centralized buffer pool. 
+In addition, all allocations for run-time data structures, such as hash tables are also made 
+by the buffer pool. 
+The buffer pool manager employs an LRU-2 replacement policy. 
+Thus, it is possible for a hash table to get evicted to disk, if it has become ``cold''; e.g. if it belongs to a suspended query.
+
 \section{DAG Traversal Algorithm}\label{apx:DAG-algo}
 The Query Manager is presented with a DAG for each query, where each
 node in the DAG represents a relational operator primitive.
@@ -190,6 +223,32 @@ The query is deemed as completed when all nodes are marked as ``completed.''
 %The drop operators ensure that intermediate data is dropped before the query is 
 %deemed to have completed. 
 
+\section{Resource Map Discussion}\label{apx:resource-map}
+An example Resource Map of an incoming query to the system is shown below:
+\begin{lstlisting}[language=python, 
+								   basicstyle=\ttfamily\small, 
+								   showstringspaces=false,
+								   keywordstyle=\color{bondiblue}\bfseries, 
+								   emph={CPU, Memory}, 
+								   emphstyle=\color{cardinal}\bfseries]
+CPU:    {min: 1 Core, max: 20 Cores}
+Memory: {min: 20 MB,  max: 100 MB}
+\end{lstlisting}
+
+This Resource Map states that the query can use 1 to 20 cores (i.e. specifies the range of intra-operator parallelism) and is estimated to require a minimum of 20 MB of memory to run, and an estimated 100 MB of memory in the worst case.
+
+In \sys{}, the query optimizer provides the estimated memory requirements for a given query.
+Other methods can also be used, such as inferring the estimated resources from the previous runs of the query or other statistical analyses.
+The scheduler is agnostic to how these estimates are calculated.
+
+\section{Pipelining in \sys{}}\label{apx:pipelining}
+During a work order (presumably belonging to a producer relational operator in a pipeline) execution, output data may be created (in blocks in the buffer pool). 
+When an output data block is filled, the worker thread sends a ``block filled'' message to the corresponding query's manager via the following channel: Worker $\rightarrow$ Foreman $\rightarrow$ Policy Enforcer $\rightarrow$ Query Manager.
+The Query Manager may then create a new work order (for a consumer relational operator in the pipeline) based on this information;
+e.g. if this block should be pipelined to another operator in the query plan.
+
+Note that pipelining in \sys{} works on a block-basis, instead of the traditional tuple-basis.
+
 \section{Thread Model}\label{apx:thread}
 \sys{} currently runs as a single server process, with mutiple user-space threads. 
 There are two kinds of threads. 
@@ -207,21 +266,133 @@ Each worker thread is typically pinned to a CPU core.
 Such pinning avoids costs incurred when a thread migrates from one CPU core to another, which results in loss of data and instruction cache locality. 
 We do not pin the scheduler thread, as its CPU utilization is low and it is not worth dedicating a CPU core for the scheduler thread.
 
-Every worker thread receives a work order from the Foreman, executes it and then waits for 
-the next work order.
+Every worker thread receives a work order from the Foreman, executes it and then waits for the next work order.
 In order to minimize worker's idle time, typically each worker is issued multiple work 
 orders at any given time. 
 %When a work order is sent to a worker thread, it executes the work order.
  %the worker thread simply invokes %the appropriate \verb|execute()| method (described in~\ref{ssec:workorders}). 
 Thread-safe queues are used to communicate between the threads.
-%The communication happens through light-weight messages from the sender to the receiver thread, which is internally implemented as placing a message object on the receiver's queue. 
-%A receiver reads messages from its queue. 
-%A thread (and its queue) is uniquely identified by its thread ID. 
+The communication happens through light-weight messages from the sender to the receiver thread, which is internally implemented as placing a message object on the receiver's queue. 
+A receiver reads messages from its queue. 
+A thread (and its queue) is uniquely identified by its thread ID. 
 
-%The thread communication infrastructure also implements additional features 
-%like the ability to query the lengths of any queue in the system, and cancellation 
-%of an unread message. 
-%For simplicity, we omit discussion of these aspects. 
+The thread communication infrastructure also implements additional features 
+like the ability to query the lengths of any queue in the system, and cancellation 
+of an unread message. 
+For simplicity, we omit discussion of these aspects. 
+\section{Motivation for the Learning Agent Module}\label{apx:learning-motivation}
+One might question the need of the Learning Agent and instead consider assigning a fixed probability value to each query (say $1/N$, with $N$ queries in the fair policy).
+In the following section, we address this issue. 
+A motivational example for the learning agent is described in Appendix~\ref{apx:learning-motivation}.
+
+We perform an experiment, where the goal is to analyze the patterns in work order execution times of two queries. 
+The dataset used for the experiment comes from the Star Schema Benchmark (SSB)~\cite{ssb} 
+at a scale factor of 100 (c.f. Section~\ref{ssec:workload} for benchmark details).
+We pick two SSB queries $Q1.1$ and $Q4.1$, and execute them on a machine with 40 CPU cores. 
+$Q1.1$ has a single join operation and $Q4.1$ has four join operations.
+Figure~\ref{fig:q1.1-q4.1-time-per-wo} shows the observed average time per work order for both queries.
+We now describe the trends in time per work order for the queries.
+
+We can observe $Q1.1$'s execution pattern denoted by the dashed line in Figure~\ref{fig:q1.1-q4.1-time-per-wo}. 
+The time per work order remains fairly stable (barring some intermittent fluctuations) from the beginning until 1.8 s.
+This phase corresponds to the selection operation in $Q1.1$ which evaluates predicates on the \textit{lineorder} (fact) table.
+A small bump in time per work order can be observed at the 1.8 s mark, when the probe phase of $Q1.1$ begins and continues until 2 s.
+Towards the end of the execution of $Q1.1$, (2.2 s) there is a spike in time per work order when the query enters the aggregation phase. 
+The output of the hash join is fed to the aggregation operation. 
+The results of aggregation are stored in per-thread private hash tables, which are later merged to produce the final output.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=\columnwidth]{figures/q11-q41-time-per-wo.pdf}
+	\vspace{-2.5em}
+	\caption{Time per work order for Q1.1 and Q4.1}
+	\label{fig:q1.1-q4.1-time-per-wo}
+%	\vspace{-2em}
+\end{figure}
+
+Now we analyze the execution pattern for $Q4.1$ which has 4 join operations. 
+This query is more complex than $Q1.1$.% which has a single join.
+%Due to the more complex nature of the query, 
+Therefore, the execution pattern of $Q4.1$ exhibits more phases, with different times per work order as compared to $Q1.1$.
+Various small phases before the 0.5 s mark correspond to the selection predicates that are applied to the dimension tables. (Note that in $Q4.1$ there is no selection filter on the \textit{lineorder} table).
+The selections on dimension tables get executed quickly.
+The longer phases denote the different probe hash table operations in the query.
+Towards the end, similar to $Q1.1$, there is a spike in the execution time per work order which correspond to the aggregation phase.
+
+It is clear that the work order execution times for both queries are different, and the difference between them changes over time. 
+If the scheduler assigns the same probability to both queries (i.e. 0.5), it is equally likely to schedule a work order from either of them. 
+As a result, the queries will have different CPU utilization times in a given epoch, thus resulting in an unfair CPU allocation. 
+In order to be consistently fair in allocating CPU resources to the queries, we should continuously observe the work order execution times of queries and adjust the CPU allocation accordingly. 
+
+\section{Usage of Linear Regression in Learning Agent}\label{apx:linear-regression-usage}
+The Learning Agent uses linear regression for predicting the execution time of the future work orders.
+To lower the CPU and memory overhead of the model, we limit the amount of execution statistics stored in the Learning Agent.
+We discard records beyond a certain time window. 
+When all the work orders of an operator finish execution, we remove its records completely. 
+In a query, if multiple relational operators are active, linear regression combines the statistics of all active operators and predicts a single value for the next work order execution time.
+
+\section{Resource Choices for Policy Implementations and Load Controller Implementations}\label{apx:resource-discussion}
+In the current implementation of \sys{}, we have focused on two key types of resource in the in-memory deployment scenarios -- CPU and memory. 
+Both these resources have different resource characteristics, which we outline below.
+
+First, consider the CPU resource. 
+On modern commodity servers there are often tens of CPU cores per socket, and the aggregate number of cycles available per unit time (e.g. a millisecond) across all the cores is very large. 
+Further, an implication of \sys{}'s fine-grained task allocation and execution paradigm is that the CPU resource can be easily shared at a fine time-granularity. 
+Several work orders, each from different query can be executed concurrently on different CPU cores, and each query may execute thousands or millions or even more number of work orders. 
+Thus, in practical terms, the CPU resource can be viewed as a nearly infinitely divisible resource across concurrent queries. 
+In addition, overall system utilization is often measured in terms of the CPU utilization. Combining all these factors, specifying a policy  in terms of the CPU utilization is natural, and intuitive for a user to understand the policy. 
+For example, saying that a fair policy equally distributes the CPU resource across all (admitted) concurrent queries is simple to understand and reason. 
+
+Memory, on the other hand, is a resource that is allocated by queries in larger granular chunks. 
+Active queries can have varying memory footprints (and the footprint for a query can change over the course of its execution). 
+Thus, memory as a resource is more naturally viewed as a ``gating'' resource. 
+Therefore, it is natural to use it in the load controller to determine if a query can be admitted based on its requested memory size. 
+Actual memory consumption for queries can also be easily monitored, and when needed queries can be suspended if memory resource needs to be freed up (for some other query, perhaps with a higher priority). 
+
+\section{Applicability of SSB for our evaluation}\label{apx:ssb}
+The SSB is based on the TPC-H benchmark, and is designed to measure the query performance when %database systems in support of classical 
+the data warehouse uses the popular Kimball~\cite{Kimball} approach. 
+At a scale factor of X, the benchmark corresponds to about X GB of data in the 
+corresponding TPC-H warehouse.
+The SSB benchmark has 13 queries, divided in four categories. 
+Each query is identified as \textbf{qX.Y}, where $X$ is the class and $Y$ is the query 
+number within the class.
+There are four query classes, i.e. $1\leq X\leq4$. 
+The first and second classes have three queries each, the third class has four queries, and 
+the fourth class has three queries.
+The queries in each category are similar with respect to aspects such as the 
+number of joins in the query, the relations being joined, the filter and aggregation 
+attributes. 
+The grouping of queries in various classes makes this benchmark suitable for our 
+experiments, as it provides a way of assigning priorities to the queries based on their class. 
+
+\section{Evaluation of Proportional Priority Policy}\label{apx:pp-policy-exp}
+Now we examine the scheduler's behavior to the proportional priority policy (cf. Section~\ref{ssec:proportional-priority}, note that higher priority integer implies higher importance).
+%In this policy, the CPU allocation to query classes should be in accordance to their priority values.
+
+We pick two queries from each SSB class, and assign them a priority value. 
+Our priority assignment reflects the complexity of the queries from the corresponding class. 
+For instance, query class 1 has one join, class 2 has two joins and so on.
+Recall that in our implementation a higher priority integer implies higher importance cf. 
+Section~\ref{ssec:proportional-priority}.
+
+Figure~\ref{fig:pp-cpu-util} shows the CPU allocation among concurrent queries in the proportional priority policy.
+We can see that a higher priority query gets proportionally higher share of CPU as 
+compared to the lower priority queries.
+When all queries from the priority class 8 finish their execution (11 seconds), the 
+lower priority classes elastically increase their CPU utilization, so as to use all the CPU 
+resources. 
+Also note that among the queries belonging to the same class, the CPU utilization is 
+nearly the same, as described in the policy specifications.
+
+\begin{figure}[t]
+	\centering
+	\includegraphics[width=\columnwidth]{figures/ssb-priority-uniform-2queries-perclass-cpu-util.pdf}
+	\vspace{-2.5em}
+	\caption{CPU allocation for proportional priority policy. Note that $a.b  (N)$ denotes a SSB query $a.b$ with priority $N$}
+	\label{fig:pp-cpu-util}
+	%	\vspace{-1em}
+\end{figure}
 
 \section{Policy Enforcer}\label{apx:policy-enforcer}
 The Policy Enforcer applies a high level policy for resource allocation among concurrent queries. 
@@ -292,178 +463,3 @@ In addition, the resource allocations across different classes can also be chose
 An attractive feature of the Policy Enforcer is that it can be easily configured for use in a variety of ways.
 Under the covers, the Policy Enforcer simply maps each class to a collective class probability value, and then maps each query in each class to another probability. 
 Once these probabilities are calculated, the remaining mechanisms simply use them to appropriately allocate resources to achieve the desired policy goal.
-
-\section{Motivation for the Learning Agent Module}\label{apx:learning-motivation}
-One might question the need of the Learning Agent and instead consider assigning a fixed probability value to each query (say $1/N$, with $N$ queries in the fair policy).
-In the following section, we address this issue. 
-A motivational example for the learning agent is described in Appendix~\ref{apx:learning-motivation}.
-
-We perform an experiment, where the goal is to analyze the patterns in work order execution times of two queries. 
-The dataset used for the experiment comes from the Star Schema Benchmark (SSB)~\cite{ssb} 
-at a scale factor of 100 (c.f. Section~\ref{ssec:workload} for benchmark details).
-We pick two SSB queries $Q1.1$ and $Q4.1$, and execute them on a machine with 40 CPU cores. 
-$Q1.1$ has a single join operation and $Q4.1$ has four join operations.
-Figure~\ref{fig:q1.1-q4.1-time-per-wo} shows the observed average time per work order for both queries.
-We now describe the trends in time per work order for the queries.
-
-We can observe $Q1.1$'s execution pattern denoted by the dashed line in Figure~\ref{fig:q1.1-q4.1-time-per-wo}. 
-The time per work order remains fairly stable (barring some intermittent fluctuations) from the beginning until 1.8 s.
-This phase corresponds to the selection operation in $Q1.1$ which evaluates predicates on the \textit{lineorder} (fact) table.
-A small bump in time per work order can be observed at the 1.8 s mark, when the probe phase of $Q1.1$ begins and continues until 2 s.
-Towards the end of the execution of $Q1.1$, (2.2 s) there is a spike in time per work order when the query enters the aggregation phase. 
-The output of the hash join is fed to the aggregation operation. 
-The results of aggregation are stored in per-thread private hash tables, which are later merged to produce the final output.
-
-\begin{figure}[h]
-	\centering
-	\includegraphics[width=\columnwidth]{figures/q11-q41-time-per-wo.pdf}
-	\vspace{-2.5em}
-	\caption{Time per work order for Q1.1 and Q4.1}
-	\label{fig:q1.1-q4.1-time-per-wo}
-%	\vspace{-2em}
-\end{figure}
-
-Now we analyze the execution pattern for $Q4.1$ which has 4 join operations. 
-This query is more complex than $Q1.1$.% which has a single join.
-%Due to the more complex nature of the query, 
-Therefore, the execution pattern of $Q4.1$ exhibits more phases, with different times per work order as compared to $Q1.1$.
-Various small phases before the 0.5 s mark correspond to the selection predicates that are applied to the dimension tables. (Note that in $Q4.1$ there is no selection filter on the \textit{lineorder} table).
-The selections on dimension tables get executed quickly.
-The longer phases denote the different probe hash table operations in the query.
-Towards the end, similar to $Q1.1$, there is a spike in the execution time per work order which correspond to the aggregation phase.
-
-It is clear that the work order execution times for both queries are different, and the difference between them changes over time. 
-If the scheduler assigns the same probability to both queries (i.e. 0.5), it is equally likely to schedule a work order from either of them. 
-As a result, the queries will have different CPU utilization times in a given epoch, thus resulting in an unfair CPU allocation. 
-In order to be consistently fair in allocating CPU resources to the queries, we should continuously observe the work order execution times of queries and adjust the CPU allocation accordingly. 
-
-\section{Storage Management in \sys{}}\label{apx:storage-manager}
-Data organization in the \sys{} storage manager holds the key to intra-query 
-parallelism~\cite{qsstorage}. 
-Data in a relation are organized in the form of blocks. 
-Each block holds a collection of tuples from a single table. 
-A unique aspect of the storage organization in \sys{} is that blocks are considered to 
-be independent and self-contained mini-databases. 
-Thus, when creating an index, instead of creating a global index with 
-``pointers'' to the tuples in blocks, the index fragments are stored within the blocks. 
-Each block is internally organized into \textit{sub-blocks}. 
-There is one \textit{tuple storage sub-block}, which could be in a row store or a 
-column store format.
-%\reminder{Should we add more formats like compressed column store etc?}. 
-In addition, each block has one sub-block for each index created on the table. 
-CSB+-tree~\cite{csb+-tree} and BitWeaving~\cite{bitweaving} 
-indices are currently supported. 
-The blocks are free to self-organize themselves and thus a given table may have blocks in different formats. 
-For example, new blocks in a table may be in a row store format, while older blocks may 
-be in a column store format.
-%The block size is configurable %(in fact blocks in the same table can be of 
-%%different sizes), %and the recommended block size is 4 MB.
-
-This storage block design, as articulated earlier in~\cite{qsstorage} enables the query execution to be broken down into a set of independent tasks on each block. 
-This is a crucial aspect that we leverage in the design of our scheduler. 
-
-% Note(harshad) - The following paragraph seems too much information, hence removing it. 
-%The storage manager also contains a \textit{buffer pool manager}. 
-%It organizes the memory as an array of slots, and overlays blocks on top of the slots (so block sizes are constrained to be a multiple of the underlying slot size). 
-%Memory allocations for data blocks for \textit{both} permanent and temporary tables are always made from a centralized buffer pool. 
-%In addition, all allocations for run-time data structures, such as hash tables are also made 
-%by the buffer pool. 
-%The buffer pool manager employs an LRU-2~\cite{lruk} replacement policy. 
-%Thus, it is possible for a hash table to get evicted to disk, if it has become ``cold''; e.g. if it belongs to a suspended query.
-
-\section{Resource Map Discussion}\label{apx:resource-map}
-An example Resource Map of an incoming query to the system is shown below:
-\begin{lstlisting}[language=python, 
-								   basicstyle=\ttfamily\small, 
-								   showstringspaces=false,
-								   keywordstyle=\color{bondiblue}\bfseries, 
-								   emph={CPU, Memory}, 
-								   emphstyle=\color{cardinal}\bfseries]
-CPU:    {min: 1 Core, max: 20 Cores}
-Memory: {min: 20 MB,  max: 100 MB}
-\end{lstlisting}
-
-This Resource Map states that the query can use 1 to 20 cores (i.e. specifies the range of intra-operator parallelism) and is estimated to require a minimum of 20 MB of memory to run, and an estimated 100 MB of memory in the worst case.
-
-In \sys{}, the query optimizer provides the estimated memory requirements for a given query.
-Other methods can also be used, such as inferring the estimated resources from the previous runs of the query or other statistical analyses.
-The scheduler is agnostic to how these estimates are calculated.
-
-\section{Pipelining in \sys{}}\label{apx:pipelining}
-During a work order (presumably belonging to a producer relational operator in a pipeline) execution, output data may be created (in blocks in the buffer pool). 
-When an output data block is filled, the worker thread sends a ``block filled'' message to the corresponding query's manager via the following channel: Worker $\rightarrow$ Foreman $\rightarrow$ Policy Enforcer $\rightarrow$ Query Manager.
-The Query Manager may then create a new work order (for a consumer relational operator in the pipeline) based on this information;
-e.g. if this block should be pipelined to another operator in the query plan.
-
-Note that pipelining in \sys{} works on a block-basis, instead of the traditional tuple-basis.
-
-\section{Resource Choices for Policy Implementations and Load Controller Implementations}\label{apx:resource-discussion}
-In the current implementation of \sys{}, we have focused on two key types of resource in the in-memory deployment scenarios -- CPU and memory. 
-Both these resources have different resource characteristics, which we outline below.
-
-First, consider the CPU resource. 
-On modern commodity servers there are often tens of CPU cores per socket, and the aggregate number of cycles available per unit time (e.g. a millisecond) across all the cores is very large. 
-Further, an implication of \sys{}'s fine-grained task allocation and execution paradigm is that the CPU resource can be easily shared at a fine time-granularity. 
-Several work orders, each from different query can be executed concurrently on different CPU cores, and each query may execute thousands or millions or even more number of work orders. 
-Thus, in practical terms, the CPU resource can be viewed as a nearly infinitely divisible resource across concurrent queries. 
-In addition, overall system utilization is often measured in terms of the CPU utilization. Combining all these factors, specifying a policy  in terms of the CPU utilization is natural, and intuitive for a user to understand the policy. 
-For example, saying that a fair policy equally distributes the CPU resource across all (admitted) concurrent queries is simple to understand and reason. 
-
-Memory, on the other hand, is a resource that is allocated by queries in larger granular chunks. 
-Active queries can have varying memory footprints (and the footprint for a query can change over the course of its execution). 
-Thus, memory as a resource is more naturally viewed as a ``gating'' resource. 
-Therefore, it is natural to use it in the load controller to determine if a query can be admitted based on its requested memory size. 
-Actual memory consumption for queries can also be easily monitored, and when needed queries can be suspended if memory resource needs to be freed up (for some other query, perhaps with a higher priority). 
-
-\section{Usage of Linear Regression in Learning Agent}\label{apx:linear-regression-usage}
-The Learning Agent uses linear regression for predicting the execution time of the future work orders.
-To lower the CPU and memory overhead of the model, we limit the amount of execution statistics stored in the Learning Agent.
-We discard records beyond a certain time window. 
-When all the work orders of an operator finish execution, we remove its records completely. 
-In a query, if multiple relational operators are active, linear regression combines the statistics of all active operators and predicts a single value for the next work order execution time.
-
-\section{Applicability of SSB for our evaluation}\label{apx:ssb}
-The SSB is based on the TPC-H benchmark, and is designed to measure the query performance when %database systems in support of classical 
-the data warehouse uses the popular Kimball~\cite{Kimball} approach. 
-At a scale factor of X, the benchmark corresponds to about X GB of data in the 
-corresponding TPC-H warehouse.
-The SSB benchmark has 13 queries, divided in four categories. 
-Each query is identified as \textbf{qX.Y}, where $X$ is the class and $Y$ is the query 
-number within the class.
-There are four query classes. 
-, i.e. $1\leq X\leq4$. 
-The first and second classes have three queries each, the third class has four queries, and 
-the fourth class has three queries.
-The queries in each category are similar with respect to aspects such as the 
-number of joins in the query, the relations being joined, the filter and aggregation 
-attributes. 
-The grouping of queries in various classes makes this benchmark suitable for our 
-experiments, as it provides a way of assigning priorities to the queries based on their class. 
-
-\section{Proportional Priority}\label{apx:pp-policy-exp}
-Now we examine the scheduler's behavior to the proportional priority policy (cf. Section~\ref{ssec:proportional-priority}, note that higher priority integer implies higher importance).
-%In this policy, the CPU allocation to query classes should be in accordance to their priority values.
-
-We pick two queries from each SSB class, and assign them a priority value. 
-Our priority assignment reflects the complexity of the queries from the corresponding class. 
-For instance, query class 1 has one join, class 2 has two joins and so on.
-Recall that in our implementation a higher priority integer implies higher importance cf. 
-Section~\ref{ssec:proportional-priority}.
-
-Figure~\ref{fig:pp-cpu-util} shows the CPU allocation among concurrent queries in the proportional priority policy.
-We can see that a higher priority query gets proportionally higher share of CPU as 
-compared to the lower priority queries.
-When all queries from the priority class 8 finish their execution (11 seconds), the 
-lower priority classes elastically increase their CPU utilization, so as to use all the CPU 
-resources. 
-Also note that among the queries belonging to the same class, the CPU utilization is 
-nearly the same, as described in the policy specifications.
-
-\begin{figure}[t]
-	\centering
-	\includegraphics[width=\columnwidth]{figures/ssb-priority-uniform-2queries-perclass-cpu-util.pdf}
-	\vspace{-2.5em}
-	\caption{CPU allocation for proportional priority policy. Note that $a.b  (N)$ denotes a SSB query $a.b$ with priority $N$}
-	\label{fig:pp-cpu-util}
-	%	\vspace{-1em}
-\end{figure}

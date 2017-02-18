@@ -6,11 +6,11 @@ The goals of the experimental evaluation are as follows:
 %\itemsep -0.1em
 \item To check whether the policy enforcement meets the expected criterion defined in 
 the policy behavior. 
-\item To illustrate the role of the learning component, we compare with a static implementation of policies that doesn't use the learning-based feedback loop. 
-The probabilities assigned to each query in such implementation are statically determined and they do not change.
+\item To illustrate the role of the learning component, we compare it with policy implementations that don't use the learning-based feedback loop. 
+The probability assigned to each query in this implementation is \textit{fixed} and \textit{statically determined}.
 \item Examine the behavior of the learning-based scheduler in the presence of 
 execution skew. 
-\item To check how the load balancing component of the scheduler works in extreme/overloaded scenarios.
+\item To observe the behavior of the load controller component of the scheduler in extreme/overloaded scenarios.
 \end{enumerate}
 
 Our evaluation platform is described in Table~\ref{table:hardware}.
@@ -278,9 +278,9 @@ Note that the scheduler learns the phase changes quickly, and adjusts its estima
 \end{figure}
 
 \subsection{Load Control}
-In this experiment, we examine the load control capabilities of \sys{}'s scheduler.
+In this experiment, we examine \sys{}'s load control capabilities.
 We use two queries from each SSB query class.
-The queries from each query class have been assigned a priority value, that reflects the complexity of the queries from the class (e.g. number of joins in the query plan).
+The priority value assigned to a query reflects its complexity e.g. proportional to number of joins in the query plan.
 We configure the load controller with the threshold for suspending queries as 56 GB. 
 As the buffer pool size grows close to the threshold, the load control mechanism kicks in.
 
@@ -294,21 +294,18 @@ As the buffer pool size grows close to the threshold, the load control mechanism
 %Recall from Section~\ref{sec:background} that the 
 \sys{}'s buffer pool stores the relational tables as well as hash tables used for joins and aggregations.
 %The LRU-k based buffer pool implementation may evict cold pages if there is a need to make more memory available.
-If the requested memory cannot be allocated within the memory limits, the load controller can suspend a query with the highest memory footprint. 
-In the current implementation, we check for reactivating the suspended query upon every query completion using similar memory considerations as those described above. 
+If the requested memory cannot be allocated, the load controller can suspend a query with the highest memory footprint. 
+In the current implementation, we check for reactivating the suspended query upon every query completion. % using similar memory considerations as those described above. 
 Figure~\ref{fig:load-control-cpu-util} shows the CPU utilization of the queries.
 
-The execution begins with 2 queries each from the classes with priority values 1, 2 and 4.
+The execution begins with all the 8 queries.
 At around 4 seconds, a high priority query $Q4.1$ enters the system.
 At this point $Q3.1$ has the highest memory footprint and the load controller
 picks it as the victim for suspension.
-We can observe in Figure~\ref{fig:load-control-cpu-util}, that in the region between 4
-and 11 seconds, the CPU utilization of $Q3.1$ drops down to zero, thus
-reflecting its suspended state.
-
-The same pattern is repeated as we inject another high priority $Q4.2$ at around 12 seconds.
+We can observe in Figure~\ref{fig:load-control-cpu-util}, that from 4 to 11 seconds, the CPU utilization of $Q3.1$ is zero, reflecting its suspended state.
+The same pattern is repeated as another high priority $Q4.2$ enters the system at around 12 seconds.
 Once again $Q3.1$, that has the highest memory footprint, is suspended in order to allow $Q4.2$ to enter the system. 
-In Figure~\ref{fig:load-control-cpu-util}, we can observe that in the 12-15 s time interval, $Q4.2$ finishes its execution and the suspended $Q3.1$ doesn't utilize any CPU resource.
+Observe that in the 12 to 15 seconds time interval, $Q4.2$ gets executed and the suspended query $Q3.1$ doesn't utilize any CPU resource.
 
 This experiment demonstrates the load control capabilities of the \sys{}
 scheduler. 
