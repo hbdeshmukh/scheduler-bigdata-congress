@@ -1,10 +1,10 @@
 % !TEX root = scheduler.tex
 \section{Introduction}\label{sec:intro}
-Concurrent queries are common in various settings such as application stacks that issue multiple queries simultaneously and multi-tenant database-as-a-service environments~\cite{NarasayyaMSLSC15, NarasayyaDSCC13}.
+Concurrent queries are common in various settings, such as application stacks that issue multiple queries simultaneously and multi-tenant database-as-a-service environments~\cite{NarasayyaMSLSC15, NarasayyaDSCC13}.
 %Scheduling concurrent queries is a classical problem in database systems, which involves co-ordinating their executions, while also managing the resources used for execution. 
 There are several challenges associated with scheduling  concurrent execution of queries in such environments.
 
-The first challenge is related to exploiting the large amount of hardware parallelism that is available in modern servers, as it requires dealing with two key types of parallelism.
+The first challenge is related to exploiting the large amount of hardware parallelism that is available inside modern servers, as it requires dealing with two key types of parallelism.
 %efficiently utilizing the .  % considering the availability of large number of CPU cores. 
 The first type is \textit{intra-query parallelism}. 
 Modern database systems often use query execution methods that have a high intra-query parallelism~\cite{qsstorage,morsel,wang2016elastic}.
@@ -16,7 +16,7 @@ The second challenge is that workloads are often dynamic in nature.
 %Queries exhibit different characteristics in terms of their resource consumption behaviors and their arrival time is unpredictable.
 For each query, its resource (e.g. CPU and memory) requirements can vary over the life-span of the query. 
 Furthermore, different queries can arrive and depart at any time. % points during the workload execution. 
-Guaranteeing a  level of Quality of Service (QoS), given such dynamic workload behavior, is an important challenge for the database cloud vendor. 
+Maintaining a  level of Quality of Service (QoS) with dynamic workloads is an important challenge for the database cloud vendor. 
 
 %Query scheduler is key to the functioning of a database system, as it impacts factors such as performance, resource management and quality of service. 
 
@@ -34,7 +34,7 @@ The scheduler needs to provide an easy way to specify a variety of policies (e.g
 Ideally, the scheduler should adhere to the policy even if the query plan that it has been given has poor estimates for resource consumption.
 
 Second, the governance model should be \textit{responsive} to dynamic situations. 
-Thus, the scheduler must be reactive so that it can auto-magically deal with changing conditions; e.g., the arrival of a high-priority query or an existing query taking far more resources than expected. 
+Thus, the scheduler must be reactive and auto-magically deal with changing conditions; e.g., the arrival of a high-priority query or an existing query taking far more resources than expected. 
 A related goal for the scheduler is to \textit{control} and \textit{predictably deal} with resource thrashing.
 
 Finally, the governance should be \textit{efficient} and \textit{effective}. 
@@ -51,18 +51,20 @@ In main-memory database deployments (the focused setting for this paper), one as
 %In main-memory database deployments, which is the focus of this paper, one aspect of effective resource utilization requires using all the processing cores in the underlying server box effectively. 
 %
 \textbf{Contributions:} We present the design of a scheduler framework that meets the above goals. 
-We have implemented our scheduler framework in an open-source, in-memory database system, called \sys{}.
+We have implemented our scheduler framework in an open-source, in-memory database system, called \sys{}~\cite{quickstep}.
 %The background of \sys{}, essential for understanding the scheduler design is presented
 %in Section~\ref{sec:background}.
-A distinguishing aspect of this paper from the related work (described in Section~\ref{sec:related}) is that, we present a holistic scheduling framework to deal with both intra and inter query parallelism, in a single scheduling algorithm. 
+A distinguishing aspect of this paper compared to previous work
+%from the related work (described in Section~\ref{sec:related}) 
+is that we present a holistic scheduling framework to deal with both intra and inter query parallelism in a single scheduling algorithm. 
 %and a clean separation of policy from mechanism allowing for the system to easily support a wide variety of policies. 
 %as against a single scheduling algorithm. The framework is based on a query execution paradigm that uses smaller individual sub-tasks, which is found in many systems~\cite{morsel,wang2016elastic}.
 Therefore, our framework is far more comprehensive and more broadly applicable than previous work.
 
-Our framework employs a design that cleanly separates policy from mechanism. 
+Our framework employs a design that \textit{cleanly separates policy from mechanism}. 
 This design allows the scheduler to easily support a range of  different policies, and allows the system to effectively use the underlying hardware resources. 
-The clean separation also makes the system maintainable over time and for the system to add new policies easily. 
-Thus, the system is extensible. 
+The clean separation also makes the system maintainable over time, and for the system to incorporate new policies easily. 
+Thus, the system is \textit{extensible}. 
 The key underlying unifying mechanism is a probability-based framework that continuously determines resource allocation among concurrent queries.
 Our evaluation (see Section~\ref{sec:eval}) demonstrates that the scheduler can perform resource allocation precisely as per the policy specifications. 
 
