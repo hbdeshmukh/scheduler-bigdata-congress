@@ -1,11 +1,11 @@
 % !TEX root = scheduler.tex
 \section{Design of the Scheduler}\label{sec:design}
-In this section we present an overview of the components in the proposed \sys{} scheduler.
+In this section, we present an overview of the components in the proposed \sys{} scheduler.
 
 \subsection{Scheduler Architecture Overview}\label{ssec:scheduler-arch}
 Figure~\ref{fig:scheduler-architecture} shows the architecture of the \sys{} scheduler.
 We begin by describing the \textit{Query Manager}, that co-ordinates the progress of a single query in the system.
-It maintains the query plan DAG and a data structure called
+It maintains the query plan DAG, and a data structure called
 the \textit{Work Order Container} to track all the work orders that are ready for
 scheduling. 
 Recall from Section~\ref{sec:background}, a description of the work carried out on a block of data is a \textit{work order}. 
@@ -29,7 +29,7 @@ abstraction that governs how resources are shared among concurrent queries.
 
 Policy Enforcer (PE) and various Query Managers (QM) communicate with each other as follows:
 \textbf{QM}$\rightarrow$\textbf{PE}: Provide work orders of the managed query for dispatching them for execution.
-\textbf{PE}$\rightarrow$\textbf{QM}: Upon every work order completion, send a signal so that QM can then decide if new nodes in the DAG can be activated, and if existing nodes can be marked as completed.
+\textbf{PE}$\rightarrow$\textbf{QM}: Upon every work order completion, send a signal so that the QM can then decide if new nodes in the DAG can be activated, and if existing nodes can be marked as completed.
 A detailed description of the Policy Enforcer is present in Section~\ref{ssec:policy-enforcer}. 
 
 The Policy Enforcer contains a \textit{Load Controller} module, which is
@@ -57,12 +57,12 @@ Such predictions form the basis for the Policy Enforcer's decisions regarding sc
 The \textit{Foreman} module acts as a link between the Policy Enforcer and a pool of worker threads. 
 It receives work orders that are ready for execution from the Policy Enforcer, and dispatches them to the worker threads. 
 The Foreman can monitor the number of pending work orders for each worker, and 
-use that information for load-balancing in work order dispatch.
+use that information for load-balancing when dispatching work orders.
 Upon completion of the execution of a work order, a worker sends execution statistics to the Foreman, which are further relayed to the Policy Enforcer.
-New work orders due to pipelining are generated similarly (details in Appendix~\ref{apx:pipelining}).
+New work orders due to pipelining are generated similarly (these details are presented in Appendix~\ref{apx:pipelining}).
 
-\sys{} has two kinds of threads - a scheduler thread and many worker threads that perform the actual relational operations as defined by \textit{work orders}. 
-More details about the thread model are found in Appendix~\ref{apx:thread}
+\sys{} has two kinds of threads -- a \textit{scheduler} thread and many \textit{worker} threads that perform the actual relational operations as defined by \textit{work orders}. 
+More details about the thread model can be found in Appendix~\ref{apx:thread}.
 
 \subsection{Policy Enforcer}\label{ssec:policy-enforcer}
 The Policy Enforcer assigns a probability value to each active query in the system. 
@@ -72,8 +72,8 @@ The manner in which these probability values assigned to the queries are adjuste
 The formulations of these probabilities for various policies are expressed in Section~\ref{sec:policy}.
 
 An important information for determining such a probability value is the estimate about the run times of future work orders of the query.
-Using these estimates for all the active queries, the Policy Enforcer can tweak the resource allocation to queries with the goal of adhering to the specified policy of resource sharing. 
-In the next section, we describe the technique to estimate the execution time of future work orders of a query.
+Using these estimates for all the active queries, the Policy Enforcer can tweak the resource allocation to queries with the goal of adhering to the specified policy for resource sharing. 
+In the next section, we describe the technique that we use to estimate the execution time of future work orders of a query.
 %%Second, what happens if the future execution time of work orders keep changing? 
 %Why should we compute the probability using future work order execution times instead of assigning fixed probabilities to queries?
 %We answer these questions by introducing a Learning agent module next. 
@@ -94,8 +94,8 @@ As the query plan gets bigger, the number of phases in the plan increase.
 In addition, different queries may be in different phases at a given point in time.
 To make things more complicated, queries can enter or leave the system at any time.
 
-Therefore it is difficult to statically pick a proportion of CPU to allocate to the concurrent queries. 
-Hence there is a need to ``learn'' the various phases in the query execution and dynamically change the proportion of resources allocated to each query, based on each query's phase.
+Therefore, it is difficult to statically pick a proportion of CPU to allocate to the concurrent queries. 
+Hence there is a need to ``learn'' the various phases in the query execution and dynamically change the proportion of resources that are allocated to each query, based on each query's phase.
 Next, we study the methodology used by the Learning Agent.
 \subsubsection{Learning Agent Methodology}
 %The Learning Agent builds each query's \textit{execution profile} based 
@@ -123,10 +123,9 @@ The Learning Agent stores the execution times of the work orders grouped by thei
 \sys{}'s scheduler currently uses linear regression as the prediction model.
 We chose linear regression as it is fast, accurate, and efficient w.r.t. the computational and the storage requirements of the model. 
 %(New models can be easily added using an abstraction mechanism.) 
-More details about our usage of linear regression is described in Appendix~\ref{apx:linear-regression-usage}.
+More details about our use of linear regression is described in Appendix~\ref{apx:linear-regression-usage}.
 
-We note that the problem of estimating the query execution time is well-studied 
-~\cite{duggan2011performance, wu2013towards, li2012gslpi, 
+We note that the problem of estimating the query execution time is well-studied, but requires complex methods~\cite{duggan2011performance, wu2013towards, li2012gslpi, 
 chaudhuri2004estimating}. 
 The Learning Agent does not require such methods. 
 However, it can combine estimates from other methods with its simple learning-based estimates.
