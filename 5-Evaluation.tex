@@ -1,6 +1,6 @@
 % !TEX root = scheduler.tex
 \section{Evaluation}\label{sec:eval}
-We present an evaluation of our scheduler in this section. 
+In this section, we present an evaluation of our scheduler. 
 The goals of the experimental evaluation are as follows:
 \begin{enumerate}
 %\itemsep -0.1em
@@ -31,13 +31,13 @@ OS & Ubuntu 14.04.1 LTS \\ \hline
 \vspace{-2.5em}
 \end{table}
 \subsection{\sys{} Specifications}
-We now describe \sys{}'s configuration parameters used in the experiments. 
+We now describe \sys{}'s configuration parameters that are  used in the experiments. 
 All 40 threads in the system are used as worker threads.
 %Each worker thread is pinned to a CPU core. 
 %Such pinning prevents migration of a thread from one CPU core to another by the OS, which may incur cache misses and migration penalties.
 %The scheduler thread is not pinned, as its CPU utilization is low and it is not worth dedicating a CPU core for the scheduler thread.
 The buffer pool is configured with 80\% of the available system memory (126 GB). 
-Memory for storage blocks, temporary tables and hash tables is allocated from the buffer 
+Memory for storage blocks, temporary tables, and hash tables is allocated from the buffer 
 pool.
 The block sizes for all the stored relations is 4 MB.
 We preload the buffer pool before executing the queries, which means that the queries run on ``hot'' data. 
@@ -59,13 +59,13 @@ We preload the buffer pool before executing the queries, which means that the qu
 For our experimental evaluation, we use the Star Schema Benchmark (SSB)~\cite{ssb}. 
 We justify the choice of SSB for our evaluation in Appendix~\ref{apx:ssb}.
 %The dataset has 1 fact and 4 dimension tables. 
-We use two variants of SSB SF 100 dataset - uniform and skewed. 
+We use two variants of SSB SF 100 dataset, namely uniform and skewed. 
 %first, we generate uniform data in all the relations as per the  original benchmark specification~\cite{ssb}.
 We introduce skew in the \textit{lo\_quantity} column of \textit{lineorder} table, as described by Seelam et al.~\cite{DBLP:conf/wosp/2013}.
 % with the values derived from a probability distribution function: $ P(X=x) = (0.3/1.3^{x})$. 
 %The range of values in \textit{lo\textunderscore quantity} column is $[1, 50]$. 
-In the uniform version, each value in the domain [1, 50] is equally likely to appear in the \textit{lo\textunderscore quantity} column.
-In the skewed version, 90\% values fall in the range $[1, 10]$. 
+In the uniform dataset, each value in the domain [1, 50] is equally likely to appear in the \textit{lo\textunderscore quantity} column.
+In the skewed dataset, 90\% values fall in the range $[1, 10]$. 
 
 \subsection{Evaluation of Policies}\label{ssec:policy-eval}
 In this section, we evaluate various policies currently implemented in the system.
@@ -76,7 +76,7 @@ To calculate CPU utilization, we use a log of start and end times for all work o
 
 \subsubsection{Fair}
 In this experiment, we execute all 13 queries from the SSB concurrently using the fair policy. 
-As described in Section~\ref{ssec:fairness}), the policy specification implies a fair sharing of CPU resources among concurrent queries.
+As described in Section~\ref{ssec:fairness}, the policy specification implies a fair sharing of CPU resources among concurrent queries.
 The CPU utilization of the queries is depicted in Figure~\ref{fig:fair-cpu-util}.
 As we can see, the CPU utilization of all the queries remains nearly equal to each other during the workload execution, despite queries belonging to different query classes with varying query complexities.
 
