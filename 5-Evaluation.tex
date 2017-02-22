@@ -4,10 +4,10 @@ In this section, we present an evaluation of our scheduler.
 The goals of the experimental evaluation are as follows:
 \begin{enumerate}
 %\itemsep -0.1em
-\item To check whether the policy enforcement meets the expected criterion defined in 
+\item To check if the policy enforcement meets the expected criterion defined in 
 the policy behavior. 
-\item To illustrate the role of the learning component, we compare it with policy implementations that don't use the learning-based feedback loop. 
-The probability assigned to each query in this implementation is \textit{fixed} and \textit{statically determined}.
+\item To illustrate the role of the learning component, by comparison against a policy implementation that don't use the learning-based feedback loop. 
+In this implementation, each query's probability is \textit{fixed} and \textit{statically determined}.
 \item Examine the behavior of the learning-based scheduler in the presence of 
 execution skew. 
 \item To observe the behavior of the load controller component of the scheduler in extreme/overloaded scenarios.
@@ -86,6 +86,7 @@ As we can see, the CPU utilization of all the queries remains nearly equal to ea
 	\vspace{-2.5em}
 	\caption{CPU utilization of queries in fair policy}
 	\label{fig:fair-cpu-util}
+%	\vspace{-1em}		
 \end{figure}
 
 Notice that the available CPU resources also get automatically distributed elastically among the active queries (e.g. at the 10 and 15 seconds marks) when a query finishes its execution. 
@@ -115,6 +116,7 @@ The result of this experiment also demonstrates that \sys{}'s scheduler design n
 	\caption{CPU utilization in HPF policy. Note that $a.b  (N)$ denotes a SSB query $a.b$ with priority $N$}
 	\vspace{-1em}
 	\label{fig:hpf-all}
+%	\vspace{-1em}		
 \end{figure}
 
 Due to space restriction, we present the evaluation of Proportional Priority policy in Appendix~\ref{apx:pp-policy-exp}.
@@ -166,14 +168,14 @@ should be equal. % to each other, which means the ideal ratio is 1.
 Figure~\ref{fig:non-learning-comparison} shows the results of this experiment.
 %We restrict the X-axis until both the queries are under execution. 
 
-\begin{figure}[h]
+\begin{figure}[]
 	\centering
 	\includegraphics[width=\columnwidth]{figures/q1-q11-ratio-cpu-util.pdf}
-	\vspace{-2em}
+	\vspace{-2.5em}
 	\caption{Ratio of CPU utilizations  $\frac{Q4.1}{Q1.1}$ for learning and non-learning 
 		implementations}
 	\label{fig:non-learning-comparison}
-%	\vspace{-1em}
+	\vspace{-0.8em}
 \end{figure}
 
 Observe in Figure~\ref{fig:non-learning-comparison}, that the ratio in the non-learning implementation is closer to 2, meaning that the 
@@ -233,7 +235,7 @@ We compare the throughput for both $Q4.1$ and $Q1.1$ using the learning implemen
 %The throughput is nearly \reminder{add number}X better in the learning implementation compared to the non-learning one. 
 Figure~\ref{fig:q11-q41-throughput} plots the result of this experiment and shows the throughput for each query stream. 
 The throughput for the $Q4.1$ stream is not affected considerably by the choice of the implementation. 
-However the throughput of the $Q1.1$ stream is improved significantly using the learning implementation, and it is upto 3x better than the throughput using the non-learning implementation. 
+However using the learning implementation, the throughput of the $Q1.1$ stream improves significantly (upto 3x better than the non-learning implementation). 
 The reasons for the improvement are as follows:
 Following the result of the previous experiment (cf. Figure~\ref{fig:non-learning-comparison}), in the non-learning implementation, $Q1.1$ which has shorter work orders, gets starved of CPU resources due to $Q4.1$, which has longer duration work orders. 
 In the learning-based implementation however, the $Q1.1$ stream gets its fair share of CPU resource (more than that in the non-learning implementation). 
@@ -255,7 +257,7 @@ For the predicate $lo\textunderscore quantity \leq 25$ on the skewed table, some
 	\vspace{-0.6em}
 	\caption{Impact of learning on the throughput}
 	\label{fig:q11-q41-throughput}
-	\vspace{-1em}
+	\vspace{-1.2em}
 \end{figure}
 	
 %To test the scheduler's ability to learn in the presence of skew, 
@@ -287,8 +289,10 @@ As the buffer pool size grows close to the threshold, the load control mechanism
 \begin{figure}[]
 	\centering
 	\includegraphics[width=\columnwidth]{figures/load-control-cpu-util.pdf}
+	\vspace{-2.5em}	
 	\caption{Load control: An SSB query $a.b$ with priority $N$ is denoted as $a.b (N)$}
 	\label{fig:load-control-cpu-util}
+	\vspace{-1em}	
 \end{figure}
 
 %Recall from Section~\ref{sec:background} that the 

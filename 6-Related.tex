@@ -34,8 +34,11 @@ This work is complimentary to our scheduler design as it deals with ordering the
 %\sys{}'s prioritized query execution approach can be effective in  scenarios involving 
 %SLAs. 
 
-Workload management is an important problem for commercial databases~\cite{res_gov, rm, DB2, teradatawm, gpdb, hpwm}. 
-A common theme in commercial workload management solutions is to provide admission control capabilities, classification of queries based on their estimated resource requirements (e.g. CPU, memory, I/O), encoding resource allocation limits as resource pools and mapping workloads to the resource pools. 
+Several enterprise databases~\cite{res_gov, rm, DB2, teradatawm, gpdb, hpwm} offer
+workload management solutions.
+Such solutions include features %such as admission control capabilities, 
+classification of queries based on their estimated resource requirements % (e.g. CPU, memory, I/O), 
+encoding resource allocation limits as resource pools and mapping workloads to such resource pools. 
 While such estimation methods can be used to complement our approach, 
 our scheduler can also work without such detailed estimation techniques. 
 Prior research in this area~\cite{krompass2007dynamic, krompass2006quality} has focused on identifying misbehaving queries, prioritizing/penalizing queries to meet the service level objectives.
@@ -43,7 +46,7 @@ Our load controller implementation can be complemented with such functionalities
 
 %Many commercial databases systems offer workload management solutions~\cite{res_gov, rm, DB2, teradatawm, gpdb, hpwm}.
 
-Resource management, in particular memory management is a crucial problem for database systems. 
+Resource (particularly memory) management, is a crucial problem for database systems. 
 Prior work in this area~\cite{mehta1993dynamic, davison1995dynamic} has focused on dynamic memory allocation schemes.
 %Mehta and Dewitt's~\cite{mehta1993dynamic} memory allocation scheme
 %grouped queries by their estimated memory requirements, and allocated memory to different query classes. 
@@ -51,7 +54,7 @@ Prior work in this area~\cite{mehta1993dynamic, davison1995dynamic} has focused 
 These techniques are complimentary to our execution engine and can also be incorporated in our buffer manager. 
 
 Predicting query performance is an active area of research. 
-Prior research~\cite{wu2013towards, wu2014uncertainty, duggan2011performance} has developed analytical model based on the optimizer's cost models for both single query and multiple concurrent queries.
+Earlier work~\cite{wu2013towards, wu2014uncertainty, duggan2011performance} has developed analytical model based on the optimizer's cost models for both single query and multiple concurrent queries.
 By design, our Learning Agent can incorporate such techniques, but can also function without them. 
 More accurate work order execution time estimates can further improve adherence to the policy specifications.
 %Wu et al.~\cite{wu2013towards, wu2014uncertainty} developed an analytical model using optimizer's cost model to estimate the CPU and I/O costs for individual query, and used a queueing model to estimate the execution times of concurrent queries in a workload.
