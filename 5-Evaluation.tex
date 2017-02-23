@@ -234,7 +234,7 @@ We compare the throughput for both $Q4.1$ and $Q1.1$ using the learning implemen
 %The throughput is nearly \reminder{add number}X better in the learning implementation compared to the non-learning one. 
 Figure~\ref{fig:q11-q41-throughput} plots the result of this experiment and shows the throughput for each query stream. 
 The throughput for the $Q4.1$ stream is not affected considerably by the choice of the implementation. 
-However using the learning implementation, the throughput of the $Q1.1$ stream improves significantly (upto 3x better than the non-learning implementation). 
+However using the learning implementation, the throughput of the $Q1.1$ stream improves significantly (up to 3x better than the non-learning implementation). 
 The reasons for the improvement are as follows:
 Following the result of the previous experiment (cf. Figure~\ref{fig:non-learning-comparison}), in the non-learning implementation, $Q1.1$ which has shorter work orders, gets starved of CPU resources due to $Q4.1$, which has longer duration work orders. 
 In the learning-based implementation however, the $Q1.1$ stream gets its fair share of CPU resource (more than that in the non-learning implementation). 

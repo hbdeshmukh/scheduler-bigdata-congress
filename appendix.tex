@@ -250,7 +250,7 @@ e.g. if this block should be pipelined to another operator in the query plan.
 Note that pipelining in \sys{} works on a block-basis, instead of the traditional tuple-basis.
 
 \section{Thread Model}\label{apx:thread}
-\sys{} currently runs as a single server process, with mutiple user-space threads. 
+\sys{} currently runs as a single server process, with multiple user-space threads. 
 There are two kinds of threads. 
 There is one \textit{Scheduler} thread, and a pool of \textit{Worker} threads. 
 All the components in 
