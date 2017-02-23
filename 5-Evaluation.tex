@@ -28,7 +28,7 @@ OS & Ubuntu 14.04.1 LTS \\ \hline
 \end{tabular}
 \caption{Evaluation Platform}
 \label{table:hardware}
-\vspace{-2.5em}
+\vspace{-2.7em}
 \end{table}
 \subsection{\sys{} Specifications}
 We now describe \sys{}'s configuration parameters that are  used in the experiments. 
@@ -104,8 +104,8 @@ We inject Q4.2 in the system at around 5 seconds and Q4.3 at around 15 seconds.
 Figure~\ref{fig:hpf-all} shows the CPU utilization of queries during the workload 
 execution.
 
-Note that when the high priority queries arrive (at the 5 and 15 seconds marks), the existing queries pause their execution and the scheduler makes way for the higher priority query.
-As soon as a higher priority query finishes its execution (i.e. at the 7 and 16 seconds marks), other low priority queries simply resume their execution.
+As the high priority queries arrive (at the 5 and 15 seconds marks), the existing queries pause their execution and the scheduler makes way for the higher priority query.
+As the higher priority queries finish their execution (i.e. at the 7 and 16 seconds marks), the paused queries resume their execution.
 
 The result of this experiment also demonstrates that \sys{}'s scheduler design naturally supports query suspension, which is an important concern in workload management. 
 
@@ -168,14 +168,14 @@ should be equal. % to each other, which means the ideal ratio is 1.
 Figure~\ref{fig:non-learning-comparison} shows the results of this experiment.
 %We restrict the X-axis until both the queries are under execution. 
 
-\begin{figure}[]
+\begin{figure}[h]
 	\centering
 	\includegraphics[width=\columnwidth]{figures/q1-q11-ratio-cpu-util.pdf}
-	\vspace{-2.5em}
+	\vspace{-2.6em}
 	\caption{Ratio of CPU utilizations  $\frac{Q4.1}{Q1.1}$ for learning and non-learning 
 		implementations}
 	\label{fig:non-learning-comparison}
-	\vspace{-0.8em}
+	\vspace{-0.9em}
 \end{figure}
 
 Observe in Figure~\ref{fig:non-learning-comparison}, that the ratio in the non-learning implementation is closer to 2, meaning that the 
@@ -257,7 +257,7 @@ For the predicate $lo\textunderscore quantity \leq 25$ on the skewed table, some
 	\vspace{-0.6em}
 	\caption{Impact of learning on the throughput}
 	\label{fig:q11-q41-throughput}
-	\vspace{-1.2em}
+	\vspace{-1em}
 \end{figure}
 	
 %To test the scheduler's ability to learn in the presence of skew, 
@@ -270,13 +270,13 @@ The execution of $Q1.1$ with skewed data takes longer than the uniform dataset.
 The intermediate peaks in the relative error correspond to phase change in the execution plan. 
 Note that the scheduler learns the phase changes quickly, and adjusts its estimates after each phase change. 
 
-\begin{figure}[]
+\begin{figure}[t]
 	\centering
 	\subfigure[Skewed dataset]{\includegraphics[]{figures/q11-q41-prediction-accuracy-skew-data.pdf}}
 	\subfigure[Uniform dataset]{\includegraphics[]{figures/q11-q41-prediction-accuracy-uniform-data.pdf}}
 	\caption{Comparison of predicted and observed time per work order}
 	\label{fig:pred-vs-observed-time-per-wo}
-	\vspace{-1em}
+	\vspace{-2em}
 \end{figure}
 
 \subsection{Load Control}
@@ -292,7 +292,7 @@ As the buffer pool size grows close to the threshold, the load control mechanism
 	\vspace{-2.5em}	
 	\caption{Load control: An SSB query $a.b$ with priority $N$ is denoted as $a.b (N)$}
 	\label{fig:load-control-cpu-util}
-	\vspace{-1em}	
+	\vspace{-2em}	
 \end{figure}
 
 %Recall from Section~\ref{sec:background} that the 

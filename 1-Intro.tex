@@ -14,7 +14,7 @@ Concurrent query execution adds another layer of parallelism, i.e. \textit{inter
 
 The second challenge is that workloads are often dynamic in nature. 
 %Queries exhibit different characteristics in terms of their resource consumption behaviors and their arrival time is unpredictable.
-For each query, its resource (e.g. CPU and memory) requirements can vary over the life-span of the query. 
+For each query, its resource (e.g. CPU and memory) demands can vary over the life-span of the query. 
 Furthermore, different queries can arrive and depart at any time. % points during the workload execution. 
 Maintaining a  level of Quality of Service (QoS) with dynamic workloads is an important challenge for the database cloud vendor. 
 
@@ -62,34 +62,17 @@ is that we present a holistic scheduling framework to deal with both intra and i
 Therefore, our framework is far more comprehensive and more broadly applicable than previous work.
 
 Our framework employs a design that \textit{cleanly separates policy from mechanism}. 
-This design allows the scheduler to easily support a range of  different policies, and allows the system to effectively use the underlying hardware resources. 
-The clean separation also makes the system maintainable over time, and for the system to incorporate new policies easily. 
+This design allows the scheduler to easily support a range of different policies, and enables the system to effectively use the underlying hardware resources. 
+The clean separation also makes the system maintainable over time, and for the system to easily incorporate new policies. 
 Thus, the system is \textit{extensible}. 
 The key underlying unifying mechanism is a probability-based framework that continuously determines resource allocation among concurrent queries.
-Our evaluation (see Section~\ref{sec:eval}) demonstrates that the scheduler can perform resource allocation precisely as per the policy specifications. 
+Our evaluation (see Section~\ref{sec:eval}) demonstrates that the scheduler can allocate resources precisely as per the policy specifications. 
 
 The framework uses a novel learning module that learns about the resources consumed by concurrent queries, and uses the model to predict future resource consumption needs for \textit{each} active query. 
 Thus, the scheduler does not require accurate predictions about resource consumption for each stage of each query from the query optimizer (though accurate predictions are welcome as they provide a better starting point to the learning component). 
 The predictions from the learning module can then be used to react to changing workload and/or environment conditions to allow the scheduler to realize the desired policy. 
 Our evaluations underline the crucial impact of the learning module in the enforcement of policies.
-
 The scheduler has a built in load controller to automatically suspend and resume queries if there is a danger of thrashing.
-%We conduct experiments with different policies, and our evaluation shows that our scheduler meets the goals stated earlier. 
-%
-%The key contributions of the paper are as follows: 
-%\vspace{-0.45em}
-%\begin{itemize}
-%\itemsep 0.25em
-%\item We present the design of a scheduler that cleanly separates policies from implementation mechanisms. 
-%A key mechanism is a probability-based framework that continually determines resource allocation among concurrent queries.
-%\item We develop a novel learning component that allows the scheduler to quickly learn about the predicted resource consumption, so that it can promptly react to changing conditions. 
-%This mechanism neither requires accurate statistics nor sophisticated operator algorithms (e.g. ~\cite{DavisonG94}), thus making the scheduler design versatile.
-%We note that because of such design, our work is complementary to research on better resource estimation and adaptive operator algorithms. 
-%\item The scheduler has an in-built load controller that stops the system from entering the dreaded thrashing zone. 
-%\item To show the effectiveness and versatility of the scheduler, we present a detailed empirical evaluation, based on implementation in an in-memory database system \sys{} 
-%%The evaluation is based on an implementation in an in-memory database system \sys{}.
-%(though it should be easy to see that our framework is broadly applicable).
-%\end{itemize}
 
 Collectively, we present an end-to-end solution for managing concurrent query execution in complex modern in-memory database deployment environments.
 

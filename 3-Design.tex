@@ -66,19 +66,16 @@ More details about the thread model can be found in Appendix~\ref{apx:thread}.
 
 \subsection{Policy Enforcer}\label{ssec:policy-enforcer}
 The Policy Enforcer assigns a probability value to each active query in the system. 
-The scheduling decisions are taken based on these probabilities. 
-A probability value assigned to a query indicates the likelihood of a work order from that query being scheduled. 
-The manner in which these probability values assigned to the queries are adjusted helps enforcing the policy. 
-The formulations of these probabilities for various policies are expressed in Section~\ref{sec:policy}.
+A scheduling decision is essentially \textit{probabilistic}, based on these probability values. 
+The probability value assigned to a query indicates the likelihood of a work order from that query being scheduled. 
+These probability values play a crucial role in the policy enforcement.
+In Section~\ref{sec:policy}, we formally derive these probability values for different policies and also establish the relationship between probability values and the policy specifications.
 
-An important information for determining such a probability value is the estimate about the run times of future work orders of the query.
-Using these estimates for all the active queries, the Policy Enforcer can tweak the resource allocation to queries with the goal of adhering to the specified policy for resource sharing. 
-In the next section, we describe the technique that we use to estimate the execution time of future work orders of a query.
-%%Second, what happens if the future execution time of work orders keep changing? 
-%Why should we compute the probability using future work order execution times instead of assigning fixed probabilities to queries?
-%We answer these questions by introducing a Learning agent module next. 
-%In the beginning of a workload execution, the Policy Enforcer uses some default 
-%probability values until the Learning Agent collects enough data so as to make a prediction. 
+An important information to determine such a probability value is an estimate about the run times of future work orders of the query.
+This information provides the Policy Enforcer some idea about the future resource requirements of each query.
+As the Policy Enforcer continuously monitors the resource allocation to different queries in the system, using the estimates, it can control the resource allocation with the goal of \textit{enforcing} the specified policy for resource sharing. 
+%Using these estimates for the active queries, the Policy Enforcer can control the resource allocation to queries with the goal of \textit{enforcing} the specified policy for resource sharing. 
+In the next section, we describe an estimation technique for the execution time of future work orders of a query.
 \subsection{Learning Agent}\label{ssec:learning}
 The Learning Agent module is responsible for predicting the execution times of the future work orders for a given query. 
 It gathers the history of executed work orders of a query and applies a prediction model on such a history to estimate the execution time of a future work order.
