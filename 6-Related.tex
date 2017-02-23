@@ -3,16 +3,16 @@
 We now describe the related work on scheduling in database systems, operating systems (OS), and networks. %, and cluster computing. 
 
 The \textit{work orders} abstraction is similar to other abstractions like \textit{morsels} in Hyper~\cite{morsel} and the \textit{segment-based parallelism}~\cite{wang2016elastic}. 
-All these abstractions propose a mechanism to achieve high intra-query, intra-operator data parallelism.
-Hyper~\cite{morsel} uses a \textit{pull-based} scheduling approach i.e. workers \textit{pull} work (morsels) from a pool. 
+Such abstractions provide a means to achieve high intra-query, intra-operator data parallelism.
+Hyper~\cite{morsel} uses a \textit{pull-based} scheduling approach i.e. workers \textit{pull} work (morsels) from a pool.
 %Every worker thread continues to pull a morsel from a global pool, and executes it.
 We use a \textit{push-based} model, where the scheduler controls the assignment of work to workers.
 The pull-based dispatch model suffices for executing one query at a time. 
-However, a push-based model can be simpler to implement sophisticated functionalities such as priority-based query scheduling, incorporating a flow control across multiple pipelines, (as shown in~\cite{wang2016elastic}), cache-aware or locality-aware task assignment.
+However, a push-based model can be simpler to implement sophisticated functionalities such as priority-based query scheduling, incorporating a flow control across multiple pipelines, (as shown in~\cite{wang2016elastic}), cache-conscious task scheduling.
 
 The elastic pipelining implementation~\cite{wang2016elastic} uses a \textit{scalability vector} to vary the degree of parallelism of segments of the query plan.
 The scalability vector tracks the query performance when number of cores are varied,  and it does not use any prediction technique.
-Their objective is to maximize the performance of a single query on a cluster.
+Their objective is to maximize the performance of a single query executed on a cluster.
 Our work focuses on resource sharing among concurrent queries, by enforcing policies using a learning-based approach. 
 Additionally, we can accommodate estimates provided by other techniques.
 

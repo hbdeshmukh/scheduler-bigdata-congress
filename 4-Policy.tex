@@ -5,11 +5,10 @@ The policies treat CPU as a \textit{divisible resource}, and the policy specific
 The load controller implementation treats memory as a \textit{gating resource} and its goal is to avoid memory thrashing.
 We justify the choice of resources for policies and load controller implementations in Appendix~\ref{apx:resource-discussion}.
 
-Next, we present the different policies that are currently implemented in \sys{} to highlight how one can encode policies to work with the probability-based scheduler. 
+%Next, we present the different policies that are currently implemented in \sys{} to highlight how one can encode policies to work with the probability-based scheduler. 
 %As noted above the policies are specified in terms of the CPU resource. 
-
 A policy specification consists of two parts: an inter-class specification (resource allocation policy across query classes), and an intra-class specification (resource allocations among queries within the same class). 
-The default specifications is uniform allocations for both intra and inter-class policies. 
+The default setting is uniform allocations for both intra and inter-class policies. 
 
 In Section~\ref{ssec:load-control-mech}, we describe the load control mechanisms that are implemented in \sys{}. 
 The load controller takes admission control and query suspension decisions based on the memory resource.
@@ -21,10 +20,10 @@ The scheduling policies, described below in Sections~\ref{ssec:fairness}, ~\ref{
 
 The interpretations of various policies are presented in Table~\ref{table:policy-interpreatations}.
 Note that for the Fair policy, there is only one class. 
-For the priority-based policies, queries are presumed to be tagged with priority (integer) values. 
+For the priority-based policies, we assume that queries are tagged with priority (integer) values. 
 %A higher integer implies higher priority. 
-Next, we describe the probabilistic framework that is used to implement various policies. 
-The notations used in the formulations are declared in Table~\ref{table:policy-notations}.
+Next, we describe the probabilistic framework that we use to implement various policies
+(cf. Table~\ref{table:policy-notations} for notations).
 
 \begin{table}[t]
 \centering
@@ -164,7 +163,7 @@ Its admission depends on the system's policy (i.e. one of the policies described
 If the system is realizing the fair policy, all queries have the same priority.
 In this scenario, the load controller simply waitlists the new query and waits until enough memory becomes available, after which the query can be admitted.
 
-For both proportional priority-based and HPF policies, if the new query's priority is smaller than the minimum priority value in the system, then the load controller waitlists the query. 
+For both priority-based policies, if the new query's priority is smaller than the minimum priority value in the system, then the load controller waitlists the query. 
 The waitlisted query can be admitted in the system when enough memory is available to admit it.
 In the other case, the load controller finds queries from the lower priority values that have high memory footprints. 
 It continues to suspend such queries from the lower priority levels (in decreasing order of memory footprints) until enough memory becomes available to admit the given query. 

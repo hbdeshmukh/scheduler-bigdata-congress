@@ -98,8 +98,8 @@ Next, we study the methodology used by the Learning Agent.
 %The Learning Agent builds each query's \textit{execution profile} based 
 %on the execution statistics of recently completed work orders for that query.
 The Learning agent uses the execution times of previously executed work orders 
-denoted as $t_{w_{1}}, t_{w_{2}}, \ldots, t_{w_{k}}$ to predict the execution time of 
-the next work order $t_{w_{k+1}}$ for a given query.\footnote{In the beginning of a query execution, when enough information about work order execution times is not available, we use the default probabilities in the Policy Enforcer, instead of using default predicted times in the Learning Agent.}
+($t_{w_{1}}, t_{w_{2}}, \ldots, t_{w_{k}}$) to predict the execution time of 
+the next work order ($t_{w_{k+1}}$) for a given query.\footnote{In the beginning of a query execution, when enough information about work order execution times is not available, we use the default probabilities in the Policy Enforcer, instead of using default predicted times in the Learning Agent.}
 Figure~\ref{fig:scheduler-cycle} shows the Learning Agent's interaction with the other scheduler components.
 %It receives the execution statistics of an  executed work order, and uses this information 
 %to predict the execution time of the future work orders. 
@@ -122,7 +122,7 @@ We chose linear regression as it is fast, accurate, and efficient w.r.t. the com
 %(New models can be easily added using an abstraction mechanism.) 
 More details about our use of linear regression is described in Appendix~\ref{apx:linear-regression-usage}.
 
-We note that the problem of estimating the query execution time is well-studied, but requires complex methods~\cite{duggan2011performance, wu2013towards, li2012gslpi, 
+The problem of estimating the query execution time is well-studied, but requires complex methods~\cite{duggan2011performance, wu2013towards, li2012gslpi, 
 chaudhuri2004estimating}. 
 The Learning Agent does not require such methods. 
 However, it can combine estimates from other methods with its simple learning-based estimates.

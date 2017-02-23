@@ -6,8 +6,8 @@ The goals of the experimental evaluation are as follows:
 %\itemsep -0.1em
 \item To check if the policy enforcement meets the expected criterion defined in 
 the policy behavior. 
-\item To illustrate the role of the learning component, by comparison against a policy implementation that don't use the learning-based feedback loop. 
-In this implementation, each query's probability is \textit{fixed} and \textit{statically determined}.
+\item To illustrate the role of the learning component, we compare it against a policy implementation that doesn't use the learning-based feedback loop. 
+%In this implementation, each query's probability is \textit{fixed} and \textit{statically determined}.
 \item Examine the behavior of the learning-based scheduler in the presence of 
 execution skew. 
 \item To observe the behavior of the load controller component of the scheduler in extreme/overloaded scenarios.
@@ -56,16 +56,16 @@ We preload the buffer pool before executing the queries, which means that the qu
 %\vspace{-1em}
 
 \subsection{Experimental Workload}\label{ssec:workload}
-For our experimental evaluation, we use the Star Schema Benchmark (SSB)~\cite{ssb}. 
+For the evaluation, we use the Star Schema Benchmark (SSB)~\cite{ssb}. 
 We justify the choice of SSB for our evaluation in Appendix~\ref{apx:ssb}.
 %The dataset has 1 fact and 4 dimension tables. 
 We use two variants of SSB SF 100 dataset, namely uniform and skewed. 
 %first, we generate uniform data in all the relations as per the  original benchmark specification~\cite{ssb}.
-We introduce skew in the \textit{lo\_quantity} column of \textit{lineorder} table, as described by Seelam et al.~\cite{DBLP:conf/wosp/2013}.
+The skew is present in the \textit{lo\_quantity} column of \textit{lineorder} table, as described by Seelam et al.~\cite{DBLP:conf/wosp/2013}.
 % with the values derived from a probability distribution function: $ P(X=x) = (0.3/1.3^{x})$. 
 %The range of values in \textit{lo\textunderscore quantity} column is $[1, 50]$. 
 In the uniform dataset, each value in the domain [1, 50] is equally likely to appear in the \textit{lo\textunderscore quantity} column.
-In the skewed dataset, 90\% values fall in the range $[1, 10]$. 
+In the skewed dataset, 90\% values fall in the range [1, 10]. 
 
 \subsection{Evaluation of Policies}\label{ssec:policy-eval}
 In this section, we evaluate various policies currently implemented in the system.
@@ -92,8 +92,8 @@ As we can see, the CPU utilization of all the queries remains nearly equal to ea
 Notice that the available CPU resources also get automatically distributed elastically among the active queries (e.g. at the 10 and 15 seconds marks) when a query finishes its execution. 
 This elasticity behavior allows \sys{} to fully utilize the CPU resources at \textit{all} times.
 \subsubsection{HPF}
-In this experiment, we validate whether the implementation matches the policy 
-specification of HPF (Highest Priority First, cf. Section~\ref{ssec:hpf}).
+Now we validate if the implementation matches the 
+specification of HPF (Highest Priority First, cf. Section~\ref{ssec:hpf}) policy.
 %which requires that when scheduling work orders, higher priority classes be 
 %preferred over lower priority classes. 
 
@@ -148,8 +148,7 @@ Due to space restriction, we present the evaluation of Proportional Priority pol
 %	%	\vspace{-1em}
 %\end{figure}
 \subsection{Impact of Learning on the Relative CPU Utilization}\label{ssec:learning-impact-cpu-util}
-In this experiment, we compare the learning-based scheduler implementation with a 
-non-learning based implementation (baseline).
+In this experiment, we compare the learning-based scheduler with a static non-learning based implementation (baseline).
 We perform the comparison using fair policy, which should be the easiest policy for a static method to realize.
 
 In the baseline, the probability assigned to each query remains fixed unless either a query is added or removed from the system.
@@ -159,7 +158,7 @@ If there are $N$ active concurrent queries in the system, each query gets a fixe
 %0}^{k} 
 %p_j} $.
 
-We run $Q1.1$ and $Q4.1$ together with the fair policy in both the learning and 
+We run $Q1.1$ and $Q4.1$ concurrently with the fair policy using both the learning and 
 non-learning implementations.
 Our metric for this experiment is the ratio of CPU utilizations of $Q4.1$ and $Q1.1$.
 %The CPU utilization is calculated as explained in Section~\ref{ssec:policy-eval}.
