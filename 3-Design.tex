@@ -49,7 +49,7 @@ The Policy Enforcer works with another module called the \textit{Learning Agent}
 Execution statistics of completed work orders are passed from the Policy Enforcer to the Learning Agent.
 This component uses a simple learning-based method to predict the time to 
 complete future work orders using the execution times of finished work orders. 
-Such predictions form the basis for the Policy Enforcer's decisions regarding scheduling the next set of work orders. 
+Such predictions form the basis for the Policy Enforcer's decisions regarding scheduling the next set of work orders (cf. Section~\ref{ssec:learning} for details on Learning Agent).
 
 %Work orders that are ready to execute are sent to a \textit{Foreman} module. 
 %The Foreman simply acts as a link between the overall scheduler and a pool of 
@@ -73,7 +73,7 @@ In Section~\ref{sec:policy}, we formally derive these probability values for dif
 
 An important information to determine such a probability value is an estimate about the run times of future work orders of the query.
 This information provides the Policy Enforcer some idea about the future resource requirements of each query.
-As the Policy Enforcer continuously monitors the resource allocation to different queries in the system, using the estimates, it can control the resource allocation with the goal of \textit{enforcing} the specified policy for resource sharing. 
+As the Policy Enforcer continuously monitors the resource allocation to different queries in the system, using these estimates, it can control the resource allocation with the goal of \textit{enforcing} the specified policy for resource sharing. 
 %Using these estimates for the active queries, the Policy Enforcer can control the resource allocation to queries with the goal of \textit{enforcing} the specified policy for resource sharing. 
 In the next section, we describe an estimation technique for the execution time of future work orders of a query.
 \subsection{Learning Agent}\label{ssec:learning}
@@ -114,7 +114,7 @@ Figure~\ref{fig:scheduler-cycle} shows the Learning Agent's interaction with the
 \end{figure}
 
 The set of previously executed work orders can belong to multiple relational operators in the query operator DAG. 
-The Learning Agent stores the execution times of the work orders grouped by their source relational operator, e.g. the execution statistics of select work orders are maintained together and kept separate from aggregation work orders. 
+The Learning Agent stores the execution times of the work orders grouped by their source relational operator, e.g. the execution statistics of select work orders are maintained together and kept separate from those of aggregation work orders. 
 
 %A prediction model is used to estimate the execution time of future work orders. 
 \sys{}'s scheduler currently uses linear regression as the prediction model.

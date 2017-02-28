@@ -36,7 +36,7 @@ This work is complimentary to our scheduler design as it deals with ordering the
 
 Several enterprise databases~\cite{res_gov, rm, DB2, teradatawm, gpdb, hpwm} offer
 workload management solutions which %such as admission control capabilities, 
-classify queries based on their estimated resource requirements % (e.g. CPU, memory, I/O), 
+classify queries based on their estimated resource requirements, % (e.g. CPU, memory, I/O), 
 encode resource allocation limits as resource pools and map workloads to such resource pools. 
 While such estimation methods can be used to complement our approach, 
 our scheduler can also work without such detailed estimation techniques. 
@@ -51,7 +51,7 @@ Our load controller can be complemented with such functionalities.
 %These techniques are complimentary to our execution engine and can also be incorporated in our buffer manager. 
 
 Predicting query performance is an active area of research. 
-Earlier work~\cite{wu2013towards, wu2014uncertainty, duggan2011performance} includes analytical model based on the optimizer's cost models for both single query and multiple concurrent queries.
+Earlier work~\cite{wu2013towards, wu2014uncertainty, duggan2011performance} includes analytical models based on the optimizer's cost models for both single query and multiple concurrent queries.
 By design, our Learning Agent can incorporate such techniques, but can also function without them. 
 More accurate work order execution time estimates can further improve adherence to the policy specifications.
 %Wu et al.~\cite{wu2013towards, wu2014uncertainty} developed an analytical model using optimizer's cost model to estimate the CPU and I/O costs for individual query, and used a queueing model to estimate the execution times of concurrent queries in a workload.
@@ -98,7 +98,7 @@ A key difference in lottery scheduling and our work is that the OS scheduling is
 The OS maintains a process context that captures the state of the preempted process. 
 \sys{}'s scheduling is non-preemptive, which means once a work order begins its execution on a CPU core, it continues to do so until completion.
 Non-preemptive scheduling provides us an exemption from maintaining work order context (similar to process context), thereby simplifying the relational operator execution algorithms.
-execution time
+
 %\reminder{Removed OS refs}
 %Meehan~\cite{meehean2011towards} analyzed various Linux CPU schedulers, %like O(1), CFS, and BFS. 
 %showcased the issues of black box CPU scheduling and highlighted the need for increased transparency in CPU scheduling.
@@ -108,7 +108,7 @@ execution time
 %Peter et al.~\cite{peter2010design} proposed design principles for multi-core schedulers used in general purpose OS.
 %Giceva et al.~\cite{giceva2013cod} advocated co-designing database and OS for their better integration.
 
-\sys{}'s scheduler design aligns to the idea that scheduling must be transparent, fine-grained, and most importantly the need to separate mechanisms from policies~\cite{LampsonS76} - a common theme found in the OS literature.
+\sys{}'s scheduler design philosophy is to make scheduling transparent and fine-grained, and to decouple mechanism from policies~\cite{LampsonS76} - a common theme found in the OS literature.
 
 Deficit Round Robin (DRR)~\cite{shreedhar1996efficient} is a technique for network packet scheduling.
 Our usage of work order execution time as a metric is similar DRR's usage of packet sizes. 

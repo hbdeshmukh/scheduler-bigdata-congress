@@ -39,7 +39,7 @@ All 40 threads in the system are used as worker threads.
 The buffer pool is configured with 80\% of the available system memory (126 GB). 
 Memory for storage blocks, temporary tables, and hash tables is allocated from the buffer 
 pool.
-The block sizes for all the stored relations is 4 MB.
+The block size for all the stored relations is 4 MB.
 We preload the buffer pool before executing the queries, which means that the queries run on ``hot'' data. 
 
 %To encode the priority information in a query, we modify \sys{}'s SQL parser.
@@ -61,7 +61,7 @@ We justify the choice of SSB for our evaluation in Appendix~\ref{apx:ssb}.
 %The dataset has 1 fact and 4 dimension tables. 
 We use two variants of SSB SF 100 dataset, namely uniform and skewed. 
 %first, we generate uniform data in all the relations as per the  original benchmark specification~\cite{ssb}.
-The skew is present in the \textit{lo\_quantity} column of \textit{lineorder} table, as described by Seelam et al.~\cite{DBLP:conf/wosp/2013}.
+The skew is introduced in the \textit{lo\_quantity} column of \textit{lineorder} table, as described by Seelam et al.~\cite{DBLP:conf/wosp/2013}.
 % with the values derived from a probability distribution function: $ P(X=x) = (0.3/1.3^{x})$. 
 %The range of values in \textit{lo\textunderscore quantity} column is $[1, 50]$. 
 In the uniform dataset, each value in the domain [1, 50] is equally likely to appear in the \textit{lo\textunderscore quantity} column.
@@ -76,7 +76,7 @@ To calculate CPU utilization, we use a log of start and end times for all work o
 
 \subsubsection{Fair}
 In this experiment, we execute all 13 queries from the SSB concurrently using the fair policy. 
-As described in Section~\ref{ssec:fairness}, the policy specification implies a fair sharing of CPU resources among concurrent queries.
+As described in Table~\ref{table:policy-interpreatations}, the policy specification implies a fair sharing of CPU resources among concurrent queries.
 The CPU utilization of the queries is depicted in Figure~\ref{fig:fair-cpu-util}.
 As we can see, the CPU utilization of all the queries remains nearly equal to each other during the workload execution, despite queries belonging to different query classes with varying query complexities.
 
@@ -89,11 +89,11 @@ As we can see, the CPU utilization of all the queries remains nearly equal to ea
 %	\vspace{-1em}		
 \end{figure}
 
-Notice that the available CPU resources also get automatically distributed elastically among the active queries (e.g. at the 10 and 15 seconds marks) when a query finishes its execution. 
+Notice that the available CPU resources also get automatically distributed elastically among the active queries (e.g. at the 10 and 18 seconds marks) when a query finishes its execution. 
 This elasticity behavior allows \sys{} to fully utilize the CPU resources at \textit{all} times.
 \subsubsection{HPF}
 Now we validate if the implementation matches the 
-specification of HPF (Highest Priority First, cf. Section~\ref{ssec:hpf}) policy.
+specification of HPF (Highest Priority First, cf. Table~\ref{table:policy-interpreatations}) policy.
 %which requires that when scheduling work orders, higher priority classes be 
 %preferred over lower priority classes. 
 
@@ -301,8 +301,8 @@ If the requested memory cannot be allocated, the load controller can suspend a q
 In the current implementation, we check for reactivating the suspended query upon every query completion. % using similar memory considerations as those described above. 
 Figure~\ref{fig:load-control-cpu-util} shows the CPU utilization of the queries.
 
-The execution begins with all the 8 queries.
-At around 4 seconds, a high priority query $Q4.1$ enters the system.
+The execution begins with 6 queries.
+At around 4 seconds, a higher priority query $Q4.1$ enters the system.
 At this point $Q3.1$ has the highest memory footprint and the load controller
 picks it as the victim for suspension.
 We can observe in Figure~\ref{fig:load-control-cpu-util}, that from 4 to 11 seconds, the CPU utilization of $Q3.1$ is zero, reflecting its suspended state.

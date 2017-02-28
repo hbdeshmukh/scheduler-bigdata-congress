@@ -61,14 +61,14 @@ is that we present a holistic scheduling framework to deal with both intra and i
 %as against a single scheduling algorithm. The framework is based on a query execution paradigm that uses smaller individual sub-tasks, which is found in many systems~\cite{morsel,wang2016elastic}.
 Therefore, our framework is far more comprehensive and more broadly applicable than previous work.
 
-Our framework employs a design that \textit{cleanly separates policy from mechanism}. 
+Our framework employs a design that \textit{cleanly separates policies from mechanism}. 
 This design allows the scheduler to easily support a range of different policies, and enables the system to effectively use the underlying hardware resources. 
 The clean separation also makes the system maintainable over time, and for the system to easily incorporate new policies. 
 Thus, the system is \textit{extensible}. 
 The key underlying unifying mechanism is a probability-based framework that continuously determines resource allocation among concurrent queries.
 Our evaluation (see Section~\ref{sec:eval}) demonstrates that the scheduler can allocate resources precisely as per the policy specifications. 
 
-The framework uses a novel learning module that learns about the resources consumed by concurrent queries, and uses the model to predict future resource consumption needs for \textit{each} active query. 
+The framework uses a novel learning module that learns about the resources consumed by concurrent queries, and uses a prediction model to predict future resource demands for \textit{each} active query. 
 Thus, the scheduler does not require accurate predictions about resource consumption for each stage of each query from the query optimizer (though accurate predictions are welcome as they provide a better starting point to the learning component). 
 The predictions from the learning module can then be used to react to changing workload and/or environment conditions to allow the scheduler to realize the desired policy. 
 Our evaluations underline the crucial impact of the learning module in the enforcement of policies.
