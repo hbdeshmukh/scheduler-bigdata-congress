@@ -13,7 +13,8 @@ execution skew.
 \item To observe the behavior of the load controller component of the scheduler in extreme/overloaded scenarios.
 \end{enumerate}
 
-Our evaluation platform is described in Table~\ref{table:hardware}.
+We use an instance from the Cloudlab~\cite{RicciEide:login14} platform for our evaluation,
+which we described in Table~\ref{table:hardware}.
 
 \begin{table}[]
 \centering
@@ -57,7 +58,7 @@ We preload the buffer pool before executing the queries, which means that the qu
 
 \subsection{Experimental Workload}\label{ssec:workload}
 For the evaluation, we use the Star Schema Benchmark (SSB)~\cite{ssb}. 
-We justify the choice of SSB for our evaluation in Appendix~\ref{apx:ssb}.
+We justify the choice of SSB for our evaluation in~\cite{supplement}.
 %The dataset has 1 fact and 4 dimension tables. 
 We use two variants of SSB SF 100 dataset, namely uniform and skewed. 
 %first, we generate uniform data in all the relations as per the  original benchmark specification~\cite{ssb}.
@@ -119,7 +120,7 @@ The result of this experiment also demonstrates that \sys{}'s scheduler design n
 %	\vspace{-1em}		
 \end{figure}
 
-Due to space restriction, we present the evaluation of Proportional Priority policy in Appendix~\ref{apx:pp-policy-exp}.
+Due to space restriction, we present the evaluation of Proportional Priority policy in~\cite{supplement}.
 %\subsubsection{Proportional Priority}\label{sssec:pp-policy-exp}
 %Now we examine the scheduler's behavior to the proportional priority policy (cf. Section~\ref{ssec:proportional-priority}, note that higher priority integer implies higher importance).
 %%In this policy, the CPU allocation to query classes should be in accordance to their priority values.
@@ -179,7 +180,7 @@ Figure~\ref{fig:non-learning-comparison} shows the results of this experiment.
 
 Observe in Figure~\ref{fig:non-learning-comparison}, that the ratio in the non-learning implementation is closer to 2, meaning that the 
 implementation is biased towards $Q4.1$. 
-This behavior stems from the fact that the time per work order for $Q4.1$ is higher than $Q1.1$ (c.f. Figure~\ref{fig:q1.1-q4.1-time-per-wo} in Appendix~\ref{apx:learning-motivation}).
+This behavior stems from the fact that the time per work order for $Q4.1$ is higher than $Q1.1$ (c.f. Figure 2 in~\cite{supplement}).
 In contrast, the ratio of CPU utilizations in the learning implementation is nearly 1.
 The learning based implementation can identify various phases in query execution for 
 both the queries and adaptively change the CPU allocation as per the changing demands 

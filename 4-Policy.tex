@@ -3,14 +3,14 @@
 Our work focuses on two critical system resources for in-memory database deployments: CPU and memory. 
 The policies treat CPU as a \textit{divisible resource}, and the policy specifications are defined in terms of relative CPU utilizations of queries or query classes.
 The load controller implementation treats memory as a \textit{gating resource} and its goal is to avoid memory thrashing.
-We justify the choice of resources for policies and load controller implementations in Appendix~\ref{apx:resource-discussion}.
+We justify the choice of resources for policies and load controller implementations in~\cite{supplement}.
 
 %Next, we present the different policies that are currently implemented in \sys{} to highlight how one can encode policies to work with the probability-based scheduler. 
 %As noted above the policies are specified in terms of the CPU resource. 
 A policy specification consists of two parts: an inter-class specification (resource allocation policy across query classes), and an intra-class specification (resource allocations among queries within the same class). 
 The default setting is uniform allocations for both intra and inter-class policies. 
 
-In Section~\ref{ssec:load-control-mech}, we describe the load control mechanisms that are implemented in \sys{}. 
+In Section~\ref{ssec:load-control-mech}, we describe \sys{}'s load control mechanisms. 
 The load controller takes admission control and query suspension decisions based on the memory resource.
 %These load control mechanisms work in conjunction with the notion of query priority used in the policy implementations.
 
