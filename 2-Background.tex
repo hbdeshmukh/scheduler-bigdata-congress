@@ -21,5 +21,4 @@ Apart from the scheduler, \sys{} has a pool of worker threads that carry out com
 A work order operates on a data block, which is treated as a self-contained mini-database~\cite{qsstorage}. 
 The computation that is required for each operator in a query plan is decomposed into a sequence of work orders. 
 For example, a select operator produces as many work orders as there are blocks in the input table. 
-Some examples of work orders are described in Appendix~\ref{apx:workorders}.
-The work order abstraction is closely related to the storage management in \sys{}, which we describe in Appendix~\ref{apx:storage-manager}.
+The work order abstraction is closely related to the storage management in \sys{}, which we describe in~\cite{supplement}, along with some examples of work orders.

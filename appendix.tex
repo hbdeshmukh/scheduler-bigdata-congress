@@ -1,6 +1,6 @@
 \section{Work Orders}\label{apx:workorders}
 Work done for executing a query in \sys{} is split into multiple \textit{work 
-orders}, as highlighted in Section~\ref{sec:background}. 
+orders}. %, as highlighted in Section~\ref{sec:background}. 
 A work order contains all the information that is needed to process tuples in a given 
 data block. 
 A work order encapsulates the relational operator that is being applied, the relevant 
@@ -253,8 +253,7 @@ Note that pipelining in \sys{} works on a block-basis, instead of the traditiona
 \sys{} currently runs as a single server process, with multiple user-space threads. 
 There are two kinds of threads. 
 There is one \textit{Scheduler} thread, and a pool of \textit{Worker} threads. 
-All the components in 
-Figure~\ref{fig:scheduler-architecture} except the worker thread pool run in the 
+All the components in the scheduler architecture except the worker thread pool run in the 
 scheduler thread. 
 In the current implementation, all threads are spun upfront when the database server 
 process is instantiated, and stay alive until the server process terminates.
@@ -287,7 +286,7 @@ A motivational example for the learning agent is described in Appendix~\ref{apx:
 
 We perform an experiment, where the goal is to analyze the patterns in work order execution times of two queries. 
 The dataset used for the experiment comes from the Star Schema Benchmark (SSB)~\cite{ssb} 
-at a scale factor of 100 (c.f. Section~\ref{ssec:workload} for benchmark details).
+at a scale factor of 100. %(c.f. Section~\ref{ssec:workload} for benchmark details).
 We pick two SSB queries $Q1.1$ and $Q4.1$, and execute them on a machine with 40 CPU cores. 
 $Q1.1$ has a single join operation and $Q4.1$ has four join operations.
 Figure~\ref{fig:q1.1-q4.1-time-per-wo} shows the observed average time per work order for both queries.
@@ -367,14 +366,15 @@ The grouping of queries in various classes makes this benchmark suitable for our
 experiments, as it provides a way of assigning priorities to the queries based on their class. 
 
 \section{Evaluation of Proportional Priority Policy}\label{apx:pp-policy-exp}
-Now we examine the scheduler's behavior to the proportional priority policy (cf. Section~\ref{ssec:proportional-priority}, note that higher priority integer implies higher importance).
+Now we examine the scheduler's behavior to the proportional priority policy %(cf. Section~\ref{ssec:proportional-priority}, 
+in which the higher priority integer implies higher importance.
 %In this policy, the CPU allocation to query classes should be in accordance to their priority values.
 
 We pick two queries from each SSB class, and assign them a priority value. 
 Our priority assignment reflects the complexity of the queries from the corresponding class. 
 For instance, query class 1 has one join, class 2 has two joins and so on.
-Recall that in our implementation a higher priority integer implies higher importance cf. 
-Section~\ref{ssec:proportional-priority}.
+Recall that in our implementation a higher priority integer implies higher importance.
+% cf. Section~\ref{ssec:proportional-priority}.
 
 Figure~\ref{fig:pp-cpu-util} shows the CPU allocation among concurrent queries in the proportional priority policy.
 We can see that a higher priority query gets proportionally higher share of CPU as 
@@ -406,9 +406,10 @@ setting, the scheduler can control the resource sharing among concurrent queries
 
 The challenge in designing the policy enforcer lies in transforming the policy specifications to a set of probabilities. 
 A critical piece that we use in such transformations is the prediction of work order 
-execution times for the concurrent queries, which is done by the Learning Agent described in Section~\ref{ssec:learning}. %and depicted in Figure~\ref{fig:scheduler-cycle}.
+execution times for the concurrent queries, which is done by the Learning Agent. 
+%described in Section~\ref{ssec:learning}. %and depicted in Figure~\ref{fig:scheduler-cycle}.
 In the remainder of this section, we provide an intuition for deriving probability values from the work order execution times. 
-A formal model for the probability computations for different policies is presented in Section~\ref{sec:policy}.
+%A formal model for the probability computations for different policies is presented in Section~\ref{sec:policy}.
 
 \begin{figure}[]
 	\centering
