@@ -22,13 +22,13 @@ Maintaining a  level of Quality of Service (QoS) with dynamic workloads is an im
 
 To address these issues, we present a concurrent query execution scheduling framework for analytic in-memory database systems. 
 %Formulating the design principles of the query scheduler requires understanding of its goals.
-We try to understand the goals for such a framework, and to do that, we relate it to a governance model.
-Because in essence, the framework \textit{governs} the use of resources for execution of queries in the system. 
+We cast the goals for the scheduler framework by relating it to a governance model, since
+the framework \textit{governs} the use of resources for executing queries in the system. 
 Next, we describe some goals for a governance model and translate them in the context of our framework.  
 
 First, an ideal governance model should be \textit{transparent}, i.e. decisions should be taken based on the guiding principles and they should be clearly understandable.
 In the context of scheduling, we can interpret this goal as requiring high level \textit{policies} that can govern the resource allocation among concurrent queries. 
-This goal also highlights the need to \textit{separate mechanisms and policies}, a famous system design principle~\cite{LampsonS76}.
+This goal also highlights the need to \textit{separate mechanisms and policies}, a well-known system design principle~\cite{LampsonS76}.
 The scheduler needs to provide an easy way to specify a variety of policies (e.g. priority-based or equal/fair allocation) that can be implemented with the underlying mechanisms.
 %Such flexibility is cruicial for the database to be deployed in various scenarios. 
 Ideally, the scheduler should adhere to the policy even if the query plan that it has been given has poor estimates for resource consumption.
@@ -61,7 +61,7 @@ is that we present a holistic scheduling framework to deal with both intra and i
 %as against a single scheduling algorithm. The framework is based on a query execution paradigm that uses smaller individual sub-tasks, which is found in many systems~\cite{morsel,wang2016elastic}.
 Therefore, our framework is far more comprehensive and more broadly applicable than previous work.
 
-Our framework employs a design that \textit{cleanly separates policies from mechanism}. 
+Our framework employs a design that cleanly separates policies from mechanism. 
 This design allows the scheduler to easily support a range of different policies, and enables the system to effectively use the underlying hardware resources. 
 The clean separation also makes the system maintainable over time, and for the system to easily incorporate new policies. 
 Thus, the system is \textit{extensible}. 
