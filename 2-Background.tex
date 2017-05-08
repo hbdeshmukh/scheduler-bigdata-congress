@@ -18,7 +18,7 @@ The scheduler runs as a separate thread and coordinates the execution of all que
 Apart from the scheduler, \sys{} has a pool of worker threads that carry out computations on the data. 
 
 \sys{} uses a query execution paradigm (built using previously proposed approaches~\cite{qsstorage,morsel}), in which a query is executed as a sequence of \textit{work orders}. 
-A work order operates on a data block, which is treated as a self-contained mini-database~\cite{qsstorage}. 
+A work order operates on a data block, which is treated as a self-contained mini-database~\cite{qsstorage}.  (c.f.~\cite{supplement} for examples of work orders)
 The computation that is required for each operator in a query plan is decomposed into a sequence of work orders. 
 For example, a select operator produces as many work orders as there are blocks in the input table. 
-The work order abstraction is closely related to the storage management in \sys{}, which we describe in~\cite{supplement}, along with some examples of work orders.
+The work order abstraction is closely related to the storage management in \sys{}, which we describe in ~\cite{supplement}.

@@ -1,6 +1,6 @@
 % !TEX root = scheduler.tex
 \section{Related Work}\label{sec:related}
-We now describe the related work on scheduling in database systems, operating systems (OS), and networks. %, and cluster computing. 
+%We now describe the related work on scheduling in database systems, operating systems (OS), and networks. %, and cluster computing. 
 
 The \textit{work orders} abstraction is similar to other abstractions like \textit{morsels} in Hyper~\cite{morsel} and the \textit{segment-based parallelism}~\cite{wang2016elastic}. 
 Such abstractions provide a means to achieve high intra-query, intra-operator data parallelism.
@@ -114,6 +114,8 @@ Deficit Round Robin (DRR)~\cite{shreedhar1996efficient} is a technique for netwo
 Our usage of work order execution time as a metric is similar DRR's usage of packet sizes. 
 However DRR scheduling is inherently round robin based (with additional maintenance of quantum information), where as our scheduling is based on dynamic probabilities. 
 
+Our scheduler is designed for an in-memory analytical database system. 
+There are several such systems such as MonetDB~\cite{monetdb}, Spark SQL~\cite{spark-sql}.
 %\reminder{Removed cluster scheduling refs}
 %Cluster scheduling has received a wide attention recently.
 %Isard et al.~\cite{isard2009quincy} encoded the problem of scheduling jobs on compute nodes in the cluster as a graph that captures the data-locality and fairness requirements of the jobs. 

@@ -28,7 +28,7 @@ Next, we describe some goals for a governance model and translate them in the co
 
 First, an ideal governance model should be \textit{transparent}, i.e. decisions should be taken based on the guiding principles and they should be clearly understandable.
 In the context of scheduling, we can interpret this goal as requiring high level \textit{policies} that can govern the resource allocation among concurrent queries. 
-This goal also highlights the need to ``separate mechanisms and policies'', a well known system design principle~\cite{LampsonS76}.
+This goal also highlights the need to \textit{separate mechanisms and policies}, a famous system design principle~\cite{LampsonS76}.
 The scheduler needs to provide an easy way to specify a variety of policies (e.g. priority-based or equal/fair allocation) that can be implemented with the underlying mechanisms.
 %Such flexibility is cruicial for the database to be deployed in various scenarios. 
 Ideally, the scheduler should adhere to the policy even if the query plan that it has been given has poor estimates for resource consumption.
