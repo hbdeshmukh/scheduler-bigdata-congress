@@ -4,7 +4,7 @@ In this section, we present an overview of the components in the proposed \sys{}
 
 \subsection{Scheduler Architecture Overview}\label{ssec:scheduler-arch}
 Figure~\ref{fig:scheduler-architecture} shows the architecture of the \sys{} scheduler.
-We begin by describing the \textit{Query Manager}, that co-ordinates the progress of a single query in the system.
+We begin by describing the \textit{Query Manager}, that coordinates the progress of a single query in the system.
 It maintains the query plan DAG, and a data structure called
 the \textit{Work Order Container} to track all the work orders that are ready for
 scheduling. 
@@ -28,8 +28,8 @@ The policy is described in \textit{Policy Specifications}, which is an
 abstraction that governs how resources are shared among concurrent queries. 
 
 Policy Enforcer (PE) and various Query Managers (QM) communicate with each other as follows:
-\textbf{QM}$\rightarrow$\textbf{PE}: Provide work orders of the managed query for dispatching them for execution.
-\textbf{PE}$\rightarrow$\textbf{QM}: Upon every work order completion, send a signal so that the QM can then decide if new nodes in the DAG can be activated, and if existing nodes can be marked as completed.
+\textbf{QM}$\rightarrow$\textbf{PE}: Provides work orders that belong to the managed query for dispatching (to get executed).
+\textbf{PE}$\rightarrow$\textbf{QM}: Upon completion of a work order, send a signal so that the QM can then decide if new nodes in the DAG can be activated, and if existing nodes can be marked as completed.
 A detailed description of the Policy Enforcer is present in Section~\ref{ssec:policy-enforcer}. 
 
 The Policy Enforcer contains a \textit{Load Controller} module, which is
