@@ -103,7 +103,7 @@ workload.
 A higher integer is assumed to imply higher importance/priority.
 The scheduler first finds the highest priority value among all the currently active queries 
 which is $PV_{max}$. % = max(PV_{1}, PV_{2}, \ldots, PV_{k})$. 
-Next, a fair resource allocation strategy is used to allocate resources to all the active queries in that priority class. 
+Next, a fair resource allocation strategy is used to allocate resources across all the active queries in that priority class. 
 
 %Note that with the HPF policy, if higher priority queries keep arriving continually, then 
 %lower priority queries could starve.
@@ -125,8 +125,8 @@ proportional to its priority value i.e. $PV_{i}$.
 Therefore, the class with priority $PV_{i}$ should be allocated resources for 
 $t_{PV_{i}} = PV_{i}/\sum\limits_{j = 1}^{k}PV_{j}$ amount of time. 
 
-We now estimate the number of work orders of priority class $PV_{i}$ that can be executed in its allotted time. 
-For this estimation, we need an estimate for the execution time of a future work order from the class as a whole, referred to as $w_{PV_{i}}$ for priority value $PV_{i}$.
+We now estimate the number of work orders for priority class $PV_{i}$ that can be executed in its allotted time. 
+For this task, we need an estimate for the execution time of a future work order from the class as a whole, referred to as $w_{PV_{i}}$ for the class with priority value $PV_{i}$.
 Therefore, assuming $m$ queries in a given class and the individual estimates of 
 work order execution times for queries with priority $PV_{i}$ are $t_{1}, t_{2}, \ldots, t_{m}$, then the predicted work order execution time for the class is $w_{PV_{i}} = \sum\limits_{j = 1}^{m}t_{j}/m$.
 Therefore the estimated number of work orders executed for priority class $PV_{i}$ is
@@ -138,10 +138,10 @@ time, computing probabilities for each class is straightforward.
 The probability of priority class $PV_{i}$ is 
 $prob_{PV_{i}} = n_{PV_{i}}/\sum\limits_{j = 1}^{k}n_{PV_{j}}$
 
-Next we take a look at the load control mechanism. % in \sys{}.
+Next, we describe the load control mechanism. % in \sys{}.
 \subsection{Load Control Mechanism}\label{ssec:load-control-mech}
-As described earlier, the load control mechanism in \sys{} is designed to ensure the availability of memory resource to the queries in the system.
-This requires continuous monitoring of memory consumption in the system.
+As described earlier, the load control mechanism in \sys{} is designed to manage the availability of memory resource to the queries in the system.
+This task requires continuous monitoring of memory consumption in the system.
 The load controller component has two functions:
 1) Determining if new queries are allowed to run (a.k.a. admission control).
 2) Suspending queries if the system is in danger of thrashing.
@@ -161,10 +161,10 @@ When memory is scarce, i.e. $m_{min}+m_{current}>M$, the query can not be admitt
 Its admission depends on the system's policy (i.e. one of the policies described earlier).
 
 If the system is realizing the fair policy, all queries have the same priority.
-In this scenario, the load controller simply waitlists the new query and waits until enough memory becomes available, after which the query can be admitted.
+In this scenario, the load controller simply suspends the new query until enough memory becomes available, after which the query can be admitted.
 
-For both priority-based policies, if the new query's priority is smaller than the minimum priority value in the system, then the load controller waitlists the query. 
-The waitlisted query can be admitted in the system when enough memory is available to admit it.
+For both priority-based policies, if the new query's priority is smaller than the minimum priority value in the system, then the load controller suspends the query. 
+The suspended query can be admitted in the system when enough memory is available to admit it.
 In the other case, the load controller finds queries from the lower priority values that have high memory footprints. 
 It continues to suspend such queries from the lower priority levels (in decreasing order of memory footprints) until enough memory becomes available to admit the given query. 
 

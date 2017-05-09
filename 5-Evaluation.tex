@@ -58,18 +58,18 @@ We preload the buffer pool before executing the queries, which means that the qu
 
 \subsection{Experimental Workload}\label{ssec:workload}
 For the evaluation, we use the Star Schema Benchmark (SSB)~\cite{ssb}. 
-We justify the choice of SSB for our evaluation in~\cite{supplement}.
+%We justify the choice of SSB for our evaluation in~\cite{supplement}.
 %The dataset has 1 fact and 4 dimension tables. 
-We use two variants of SSB SF 100 dataset, namely uniform and skewed. 
+We use two variants of the SSB SF 100 dataset, namely uniform and skewed. 
 %first, we generate uniform data in all the relations as per the  original benchmark specification~\cite{ssb}.
-The skew is introduced in the \textit{lo\_quantity} column of \textit{lineorder} table, as described by Rabl et al.~\cite{DBLP:conf/wosp/RablPJOO13}.
+For the skewed dataset, the skew is introduced in the \textit{lo\_quantity} column of \textit{lineorder} table, as described by Rabl et al.~\cite{DBLP:conf/wosp/RablPJOO13}.
 % with the values derived from a probability distribution function: $ P(X=x) = (0.3/1.3^{x})$.
 %The range of values in \textit{lo\textunderscore quantity} column is $[1, 50]$. 
 In the uniform dataset, each value in the domain [1, 50] is equally likely to appear in the \textit{lo\textunderscore quantity} column.
 In the skewed dataset, 90\% values fall in the range [1, 10]. 
 
 \subsection{Evaluation of Policies}\label{ssec:policy-eval}
-In this section, we evaluate various policies currently implemented in the system.
+In this section, we evaluate the policies that are currently implemented in the system.
 %All the policies are specified in terms of the CPU resources. 
 %With these experiments, 
 Specifically, we verify if the actual CPU allocation among queries is in accordance with the policy specifications.
@@ -94,7 +94,7 @@ Notice that the available CPU resources also get automatically distributed elast
 This elasticity behavior allows \sys{} to fully utilize the CPU resources at \textit{all} times.
 \subsubsection{HPF}
 Now we validate if the implementation matches the 
-specification of HPF (Highest Priority First, cf. Table~\ref{table:policy-interpreatations}) policy.
+specification of the HPF (cf. Table~\ref{table:policy-interpreatations}) policy.
 %which requires that when scheduling work orders, higher priority classes be 
 %preferred over lower priority classes. 
 
@@ -120,7 +120,7 @@ The result of this experiment also demonstrates that \sys{}'s scheduler design n
 %	\vspace{-1em}		
 \end{figure}
 
-Due to space restriction, we present the evaluation of Proportional Priority policy in~\cite{supplement}.
+Due to space restriction, we omit the evaluation of Proportional Priority policy here, and refer the interested reader to~\cite{supplement}.
 %\subsubsection{Proportional Priority}\label{sssec:pp-policy-exp}
 %Now we examine the scheduler's behavior to the proportional priority policy (cf. Section~\ref{ssec:proportional-priority}, note that higher priority integer implies higher importance).
 %%In this policy, the CPU allocation to query classes should be in accordance to their priority values.
@@ -237,7 +237,7 @@ Figure~\ref{fig:q11-q41-throughput} plots the result of this experiment and show
 The throughput for the $Q4.1$ stream is not affected considerably by the choice of the implementation. 
 However using the learning implementation, the throughput of the $Q1.1$ stream improves significantly (up to 3x better than the non-learning implementation). 
 The reasons for the improvement are as follows:
-Following the result of the previous experiment (cf. Figure~\ref{fig:non-learning-comparison}), in the non-learning implementation, $Q1.1$ which has shorter work orders, gets starved of CPU resources due to $Q4.1$, which has longer duration work orders. 
+Following the result of the previous experiment (cf. Figure~\ref{fig:non-learning-comparison}), in the non-learning implementation, $Q1.1$ which has shorter work orders, is starved of CPU resources due to $Q4.1$, which has longer duration work orders. 
 In the learning-based implementation however, the $Q1.1$ stream gets its fair share of CPU resource (more than that in the non-learning implementation). 
 Therefore, $Q1.1$'s performance is improved, resulting in its increased throughput. 
 
@@ -279,8 +279,8 @@ Note that the scheduler learns the phase changes quickly, and adjusts its estima
 	\vspace{-2em}
 \end{figure}
 
-\subsection{Load Control}
-In this experiment, we examine \sys{}'s load control capabilities.
+\subsection{Load Controller}
+In this experiment, we evaluate the effectiveness of the load controller.
 We use two queries from each SSB query class.
 The priority value assigned to a query reflects its complexity e.g. proportional to number of joins in the query plan.
 We configure the load controller with the threshold for suspending queries as 56 GB. 
