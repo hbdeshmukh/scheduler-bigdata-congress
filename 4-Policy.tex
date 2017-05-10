@@ -136,11 +136,10 @@ After determining $n_{PV_{1}}, n_{PV_{2}}, \ldots, n_{PV_{k}}$, which are the
 estimated number of work orders executed by all the priority classes in their allotted
 time, computing probabilities for each class is straightforward.
 The probability of priority class $PV_{i}$ is 
-$prob_{PV_{i}} = n_{PV_{i}}/\sum\limits_{j = 1}^{k}n_{PV_{j}}$
-
+$prob_{PV_{i}} = n_{PV_{i}}/\sum\limits_{j = 1}^{k}n_{PV_{j}}$.
 Next, we describe the load control mechanism. % in \sys{}.
 \subsection{Load Control Mechanism}\label{ssec:load-control-mech}
-As described earlier, the load control mechanism in \sys{} is designed to manage the availability of memory resource to the queries in the system.
+Recall that the load control mechanism in \sys{} is designed to manage the availability of memory resource to the queries in the system.
 This task requires continuous monitoring of memory consumption in the system.
 The load controller component has two functions:
 1) Determining if new queries are allowed to run (a.k.a. admission control).
